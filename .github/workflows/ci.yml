@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (ruff + pytest)
+    runs-on: ubuntu-latest
+    services:
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: aquageo
+          POSTGRES_USER: aquageo
+          POSTGRES_PASSWORD: aquageo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aquageo"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgis://aquageo:aquageo@localhost:5432/aquageo
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system GIS libs (GDAL/GEOS/PROJ)
+        run: sudo apt-get update && sudo apt-get install -y gdal-bin libgdal-dev binutils libproj-dev
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint (ruff)
+        working-directory: backend
+        run: ruff check .
+
+      - name: Test (pytest)
+        working-directory: backend
+        run: |
+          # Stub-friendly: exit code 5 means "no tests collected yet".
+          pytest -q; rc=$?
+          if [ "$rc" -eq 5 ]; then echo "No tests collected yet — skipping (stub)."; exit 0; fi
+          exit $rc
+
+  frontend:
+    name: Frontend (npm ci + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install & build
+        working-directory: frontend
+        run: |
+          if [ ! -f package.json ]; then
+            echo "No frontend project yet — skipping (stub)."
+            exit 0
+          fi
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          npm run build --if-present
+          npm test --if-present

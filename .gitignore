@@ -1,0 +1,83 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.venv/
+venv/
+env/
+ENV/
+*.log
+
+# Django
+*.sqlite3
+db.sqlite3-journal
+local_settings.py
+staticfiles/
+mediafiles/
+media/
+*.mo
+*.pot
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# ---------- Node ----------
+node_modules/
+.pnp/
+.pnp.js
+coverage/
+.next/
+out/
+.vite/
+dist-ssr/
+*.local
+.npm/
+.eslintcache
+
+# ---------- Env / secrets ----------
+.env
+.env.*
+!.env.example
+
+# ---------- Data (raw datasets, not tracked) ----------
+data/*
+!data/.gitkeep
+backend/data/*
+!backend/data/.gitkeep
+
+# ---------- OS / IDE ----------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+*.swp
+*.swo
