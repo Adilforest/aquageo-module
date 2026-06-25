@@ -1,0 +1,60 @@
+{
+  "app": {
+    "title": "AquaGeo",
+    "subtitle": "Water Resources Portal"
+  },
+  "nav": {
+    "map": "Map",
+    "catalog": "Catalog",
+    "dashboard": "Dashboard"
+  },
+  "lang": {
+    "ru": "RU",
+    "kk": "KK",
+    "en": "EN"
+  },
+  "map": {
+    "title": "Object map",
+    "loading": "Loading objects…",
+    "error": "Failed to load objects",
+    "count": "Objects on map: {{count}}"
+  },
+  "legend": {
+    "condition": "Condition",
+    "types": "Types"
+  },
+  "condition": {
+    "serviceable": "Serviceable",
+    "monitoring": "Monitoring",
+    "repair": "Needs repair",
+    "emergency": "Emergency",
+    "nodata": "No data"
+  },
+  "types": {
+    "canal": "Canal",
+    "hydropost": "Hydropost",
+    "lock": "Lock",
+    "water_intake": "Water intake",
+    "pumping_station": "Pumping station",
+    "dam": "Dam",
+    "dike": "Dike",
+    "reservoir": "Reservoir",
+    "hydro_unit": "Hydro unit",
+    "spillway": "Spillway",
+    "pond": "Pond"
+  },
+  "kpi": {
+    "total": "Total objects",
+    "serviceable": "Serviceable",
+    "monitoring": "Monitoring",
+    "repair": "Repair",
+    "emergency": "Emergency"
+  },
+  "dashboard": {
+    "title": "Analytics dashboard"
+  },
+  "catalog": {
+    "title": "Object catalog",
+    "placeholder": "The catalog table will appear here."
+  }
+}

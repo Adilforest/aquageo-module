@@ -1,0 +1,60 @@
+{
+  "app": {
+    "title": "AquaGeo",
+    "subtitle": "Су ресурстары порталы"
+  },
+  "nav": {
+    "map": "Карта",
+    "catalog": "Каталог",
+    "dashboard": "Бақылау тақтасы"
+  },
+  "lang": {
+    "ru": "RU",
+    "kk": "KK",
+    "en": "EN"
+  },
+  "map": {
+    "title": "Нысандар картасы",
+    "loading": "Нысандар жүктелуде…",
+    "error": "Нысандарды жүктеу мүмкін болмады",
+    "count": "Картадағы нысандар: {{count}}"
+  },
+  "legend": {
+    "condition": "Жағдайы",
+    "types": "Түрлері"
+  },
+  "condition": {
+    "serviceable": "Жарамды",
+    "monitoring": "Бақылауды қажет етеді",
+    "repair": "Жөндеуді қажет етеді",
+    "emergency": "Апаттық",
+    "nodata": "Деректер жоқ"
+  },
+  "types": {
+    "canal": "Канал",
+    "hydropost": "Гидробекет",
+    "lock": "Шлюз",
+    "water_intake": "Су алу",
+    "pumping_station": "Сорғы станциясы",
+    "dam": "Бөген",
+    "dike": "Дамба",
+    "reservoir": "Су қоймасы",
+    "hydro_unit": "Гидротүйін",
+    "spillway": "Су төгу",
+    "pond": "Тоған"
+  },
+  "kpi": {
+    "total": "Барлық нысандар",
+    "serviceable": "Жарамды",
+    "monitoring": "Бақылау",
+    "repair": "Жөндеу",
+    "emergency": "Апат"
+  },
+  "dashboard": {
+    "title": "Аналитикалық тақта"
+  },
+  "catalog": {
+    "title": "Нысандар каталогы",
+    "placeholder": "Каталог кестесі осы жерде болады."
+  }
+}
