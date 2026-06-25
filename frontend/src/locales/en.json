@@ -51,7 +51,8 @@
     "emergency": "Emergency"
   },
   "dashboard": {
-    "title": "Analytics dashboard"
+    "title": "Analytics dashboard",
+    "chartsPlaceholder": "Analytics charts will appear here."
   },
   "catalog": {
     "title": "Object catalog",
