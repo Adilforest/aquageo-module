@@ -56,7 +56,9 @@ jobs:
         working-directory: backend
         run: |
           # Stub-friendly: exit code 5 means "no tests collected yet".
-          pytest -q; rc=$?
+          # `|| rc=$?` keeps the default `set -e` from aborting on that code.
+          rc=0
+          pytest -q || rc=$?
           if [ "$rc" -eq 5 ]; then echo "No tests collected yet — skipping (stub)."; exit 0; fi
           exit $rc
 
