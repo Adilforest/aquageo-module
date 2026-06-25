@@ -1,0 +1,97 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: aquageo
+      POSTGRES_USER: aquageo
+      POSTGRES_PASSWORD: aquageo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aquageo -d aquageo"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  web:
+    build:
+      context: ./backend
+    # Wait for Postgres to truly accept connections (the postgis image can flip
+    # "healthy" during first-boot init), then migrate and serve.
+    command: >-
+      sh -c "until pg_isready -h db -U aquageo -d aquageo; do
+               echo 'waiting for db...'; sleep 1; done &&
+             python manage.py migrate --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    restart: on-failure
+    environment:
+      DATABASE_URL: postgis://aquageo:aquageo@db:5432/aquageo
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "1"
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./backend
+    command: celery -A config worker -l info
+    restart: on-failure
+    environment:
+      DATABASE_URL: postgis://aquageo:aquageo@db:5432/aquageo
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "1"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    build:
+      context: ./backend
+    command: celery -A config beat -l info
+    restart: on-failure
+    environment:
+      DATABASE_URL: postgis://aquageo:aquageo@db:5432/aquageo
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "1"
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
