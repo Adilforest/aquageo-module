@@ -110,12 +110,6 @@ CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_TIMEZONE = "Asia/Almaty"
 
-# --- Celery (broker + result backend via Redis) ---------------------------
-# Worker/beat run idle for now; real tasks land in M3/M4.
-CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
-CELERY_TIMEZONE = "Asia/Almaty"
-
 # --- Auth -----------------------------------------------------------------
 # Custom user defined early so cross-app FKs (created_by, reviewer_id, ...) bind
 # to it from the very first migrations.
@@ -137,6 +131,9 @@ USE_TZ = True
 # --- Static ---------------------------------------------------------------
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
