@@ -47,8 +47,8 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # GeoDjango (django.contrib.gis) is enabled in issue #5, when the first
-    # geometry fields are introduced and GDAL/GEOS become required.
+    # GeoDjango — geometry fields land in catalog (Basin/WaterBody, issue #5).
+    "django.contrib.gis",
 ]
 
 THIRD_PARTY_APPS = [
@@ -59,6 +59,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "accounts",
     "common",
+    "catalog",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -94,17 +95,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # --- Database -------------------------------------------------------------
-# DATABASE_URL uses the postgis:// scheme (the project target). Issue #1 has no
-# geometry yet, so we fall back to the plain PostgreSQL backend until issue #5
-# enables GeoDjango — this keeps the stack runnable without GDAL/GEOS.
+# DATABASE_URL uses the postgis:// scheme -> django.contrib.gis postgis backend.
+# GeoDjango is active from issue #5 onward (Basin/WaterBody geometry).
 DATABASES = {
     "default": env.db(
         "DATABASE_URL",
         default="postgis://aquageo:aquageo@localhost:5432/aquageo",
     ),
 }
-if DATABASES["default"]["ENGINE"] == "django.contrib.gis.db.backends.postgis":
-    DATABASES["default"]["ENGINE"] = "django.db.backends.postgresql"
 
 # --- Celery (broker + result backend via Redis) ---------------------------
 # Worker/beat run idle for now; real tasks land in M3/M4.
