@@ -78,6 +78,7 @@ backend/data/*
 Thumbs.db
 .idea/
 .vscode/
-.claude/
+.claude/*
+!.claude/settings.json
 *.swp
 *.swo

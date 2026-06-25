@@ -1,3 +1,5 @@
+> **ПРАВИЛО:** НЕ добавлять `Co-Authored-By: Claude` и `Generated with Claude Code` в коммиты, заголовки и описания PR, комментарии issue, нигде на GitHub.
+
 # CLAUDE.md — Модуль портала водных ресурсов (AquaGeo)
 
 Это постоянный контекст проекта для Claude Code. Читай его перед работой.
