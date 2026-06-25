@@ -8,6 +8,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
 # backend/config/settings.py -> BASE_DIR = backend/
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,8 +21,22 @@ env = environ.Env(
 # Read repo-root .env if it exists (local dev). No-op in CI.
 environ.Env.read_env(BASE_DIR.parent / ".env")
 
-SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-key-change-me")
 DEBUG = env.bool("DEBUG", default=False)
+
+# A real SECRET_KEY is mandatory in CI/production. In local dev (DEBUG=True) an
+# empty key is tolerated by generating an ephemeral one, so `docker compose up`
+# works against an empty .env.
+SECRET_KEY = env("SECRET_KEY", default="")
+if not SECRET_KEY:
+    if DEBUG:
+        from django.core.management.utils import get_random_secret_key
+
+        SECRET_KEY = get_random_secret_key()
+    else:
+        raise ImproperlyConfigured(
+            "SECRET_KEY must be set when DEBUG is off (CI/production)."
+        )
+
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
 
 # --- Applications ---------------------------------------------------------
@@ -90,6 +105,12 @@ DATABASES = {
 }
 if DATABASES["default"]["ENGINE"] == "django.contrib.gis.db.backends.postgis":
     DATABASES["default"]["ENGINE"] = "django.db.backends.postgresql"
+
+# --- Celery (broker + result backend via Redis) ---------------------------
+# Worker/beat run idle for now; real tasks land in M3/M4.
+CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
+CELERY_TIMEZONE = "Asia/Almaty"
 
 # --- Auth -----------------------------------------------------------------
 # Custom user defined early so cross-app FKs (created_by, reviewer_id, ...) bind
