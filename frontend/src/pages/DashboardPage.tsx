@@ -1,7 +1,16 @@
 import { useTranslation } from "react-i18next";
 
-// KPI cards and charts are added in issues #14 / #20.
+import KpiCards from "../components/KpiCards";
+
+// Charts (by type / basin / dynamics) are added in issue #20.
 export default function DashboardPage() {
   const { t } = useTranslation();
-  return <div className="placeholder">{t("dashboard.title")}</div>;
+  return (
+    <div style={{ overflowY: "auto", height: "100%" }}>
+      <KpiCards />
+      <div className="placeholder" style={{ paddingTop: 0 }}>
+        {t("dashboard.chartsPlaceholder")}
+      </div>
+    </div>
+  );
 }
