@@ -1,0 +1,60 @@
+{
+  "app": {
+    "title": "AquaGeo",
+    "subtitle": "Портал водных ресурсов"
+  },
+  "nav": {
+    "map": "Карта",
+    "catalog": "Каталог",
+    "dashboard": "Дашборд"
+  },
+  "lang": {
+    "ru": "RU",
+    "kk": "KK",
+    "en": "EN"
+  },
+  "map": {
+    "title": "Карта объектов",
+    "loading": "Загрузка объектов…",
+    "error": "Не удалось загрузить объекты",
+    "count": "Объектов на карте: {{count}}"
+  },
+  "legend": {
+    "condition": "Состояние",
+    "types": "Типы"
+  },
+  "condition": {
+    "serviceable": "Исправное",
+    "monitoring": "Требует наблюдения",
+    "repair": "Требует ремонта",
+    "emergency": "Аварийное",
+    "nodata": "Нет данных"
+  },
+  "types": {
+    "canal": "Канал",
+    "hydropost": "Гидропост",
+    "lock": "Шлюз",
+    "water_intake": "Водозабор",
+    "pumping_station": "Насосная станция",
+    "dam": "Плотина",
+    "dike": "Дамба",
+    "reservoir": "Водохранилище",
+    "hydro_unit": "Гидроузел",
+    "spillway": "Водосброс",
+    "pond": "Пруд"
+  },
+  "kpi": {
+    "total": "Всего объектов",
+    "serviceable": "Исправно",
+    "monitoring": "Наблюдение",
+    "repair": "Ремонт",
+    "emergency": "Авария"
+  },
+  "dashboard": {
+    "title": "Аналитический дашборд"
+  },
+  "catalog": {
+    "title": "Каталог объектов",
+    "placeholder": "Таблица каталога появится здесь."
+  }
+}

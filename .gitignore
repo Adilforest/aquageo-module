@@ -82,3 +82,6 @@ Thumbs.db
 !.claude/settings.json
 *.swp
 *.swo
+
+# Playwright MCP artifacts
+.playwright-mcp/
