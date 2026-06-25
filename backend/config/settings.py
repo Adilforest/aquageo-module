@@ -42,6 +42,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "accounts",
     "common",
 ]
 
@@ -91,6 +92,10 @@ if DATABASES["default"]["ENGINE"] == "django.contrib.gis.db.backends.postgis":
     DATABASES["default"]["ENGINE"] = "django.db.backends.postgresql"
 
 # --- Auth -----------------------------------------------------------------
+# Custom user defined early so cross-app FKs (created_by, reviewer_id, ...) bind
+# to it from the very first migrations.
+AUTH_USER_MODEL = "accounts.User"
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
