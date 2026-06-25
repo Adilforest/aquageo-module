@@ -28,7 +28,7 @@ export const TYPE_ICONS: Record<string, string> = {
   lock: "lock",
   water_intake: "water_pump",
   pumping_station: "water_pump",
-  dam: "dam",
+  dam: "water_drop",
   dike: "fence",
   reservoir: "water",
   hydro_unit: "hub",
