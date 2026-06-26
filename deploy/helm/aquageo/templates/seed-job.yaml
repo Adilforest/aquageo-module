@@ -1,0 +1,52 @@
+{{- if .Values.seed.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "aquageo.fullname" . }}-seed
+  labels:
+    {{- include "aquageo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: seed
+  annotations:
+    # Sync-хук, wave "1": после миграций (wave 0) и до приложений (wave 5).
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        {{- include "aquageo.selectorLabels" (dict "ctx" . "component" "seed") | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "aquageo.serviceAccountName" . }}
+      {{- include "aquageo.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.security.podSecurityContext | nindent 8 }}
+      containers:
+        - name: seed
+          image: {{ include "aquageo.backendImage" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.security.containerSecurityContext | nindent 12 }}
+          command: ["sh", "-c"]
+          args:
+            - >-
+              until python -c "import os,socket,urllib.parse as u; d=u.urlparse(os.environ['DATABASE_URL']); socket.create_connection((d.hostname, d.port or 5432), 3).close()" 2>/dev/null;
+              do echo 'waiting for db...'; sleep 2; done &&
+              python manage.py seed_reference &&
+              python manage.py seed_demo &&
+              python manage.py generate_hydropost_history --days {{ .Values.seed.days }} &&
+              (python manage.py recompute_assessments || true)
+          {{- include "aquageo.appEnvFrom" . | nindent 10 }}
+          resources:
+            {{- toYaml .Values.seed.resources | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: {} }
+{{- end }}

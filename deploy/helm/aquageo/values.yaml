@@ -117,7 +117,9 @@ worker:
 # ─── beat (Celery beat) ──────────────────────────────────────────────────
 beat:
   # schedule пишется на read-only FS -> кладём в writable emptyDir
-  schedulePath: /tmp/celerybeat/schedule.db
+  # Файл прямо в /tmp (emptyDir), без подкаталога: dbm.open не создаёт
+  # родительские папки, поэтому путь с /tmp/celerybeat/ падал No such file.
+  schedulePath: /tmp/celerybeat-schedule
   resources:
     requests: { cpu: 50m,  memory: 128Mi }
     limits:   { cpu: 250m, memory: 256Mi }
@@ -138,6 +140,16 @@ frontend:
 migrate:
   enabled: true
   collectstatic: true
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: "1",  memory: 512Mi }
+
+# ─── Сидинг демо-данных (Sync-хук, wave 1, после миграций) ───────────────
+# Идемпотентно: справочники + ~20 объектов Жамбылской области на карту +
+# временные ряды гидропостов + пересчёт оценок. Для демо включить.
+seed:
+  enabled: false
+  days: 90          # глубина истории гидропостов
   resources:
     requests: { cpu: 100m, memory: 256Mi }
     limits:   { cpu: "1",  memory: 512Mi }
