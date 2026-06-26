@@ -117,7 +117,11 @@ def run_parse(job, object_type, *, extractor=None):
         extracted = extract_fn(text, schema)
         job.raw_extract = extracted
         job.confidence = derive_confidence(extracted, text)
-        job.result_structure = _draft_from_extract(object_type, extracted, job.created_by)
+        draft = _draft_from_extract(object_type, extracted, job.created_by)
+        job.result_structure = draft
+        # Compare the draft against the catalog (#23).
+        from .matching import compute_match
+        job.match_status, job.matched_structure = compute_match(draft)
         job.status = ParseJob.Status.DONE
         job.error_message = ""
     except Exception as exc:  # noqa: BLE001 — surface any failure as job error
