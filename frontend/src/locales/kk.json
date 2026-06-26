@@ -65,5 +65,56 @@
   "catalog": {
     "title": "Нысандар каталогы",
     "placeholder": "Каталог кестесі осы жерде болады."
+  },
+  "card": {
+    "details": "Толығырақ",
+    "edit": "Өңдеу",
+    "save": "Сақтау",
+    "cancel": "Бас тарту",
+    "saveError": "Сақтау мүмкін болмады",
+    "noPhoto": "Фото жоқ",
+    "waterObject": "Су нысаны",
+    "coordinates": "Координаттар",
+    "year": "Іске қосу жылы",
+    "basin": "Бассейн",
+    "district": "Аудан",
+    "responsibleOrg": "Жауапты ұйым",
+    "significance": "Маңыздылығы",
+    "condition": "Техникалық жағдайы",
+    "techParams": "Техникалық параметрлер",
+    "inspections": "Тексерулер",
+    "documents": "Құжаттар",
+    "noInspections": "Тексерулер жоқ",
+    "noDocuments": "Құжаттар жоқ",
+    "nameRu": "Атауы (RU)",
+    "nameKk": "Атауы (KK)",
+    "nameEn": "Атауы (EN)"
+  },
+  "significance": {
+    "republican": "Республикалық",
+    "regional": "Облыстық",
+    "district": "Аудандық",
+    "local": "Жергілікті"
+  },
+  "roles": {
+    "viewer": "Қонақ",
+    "engineer": "Инженер",
+    "manager": "Басшы",
+    "admin": "Әкімші"
+  },
+  "auth": {
+    "login": "Кіру",
+    "logout": "Шығу",
+    "username": "Логин",
+    "password": "Құпиясөз",
+    "invalid": "Қате логин немесе құпиясөз",
+    "error": "Кіру қатесі"
+  },
+  "attachment": {
+    "photo": "Фото",
+    "passport": "Паспорт",
+    "act": "Акт",
+    "order": "Бұйрық",
+    "source_file": "Бастапқы файл"
   }
 }

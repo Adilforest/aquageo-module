@@ -23,15 +23,20 @@ class AuditEvent:
 
 
 def record(event: AuditEvent) -> None:
-    """Record an audit event.
+    """Persist an audit event as an ``AuditLog`` row (and log at DEBUG)."""
+    from .models import AuditLog
 
-    Placeholder implementation logs at DEBUG. Issue #29 replaces this with a
-    persisted ``AuditLog`` row.
-    """
     logger.debug(
         "audit: actor=%s action=%s entity=%s/%s",
         event.actor,
         event.action,
         event.entity_type,
         event.entity_id,
+    )
+    AuditLog.objects.create(
+        actor=event.actor or "",
+        action=event.action,
+        entity_type=event.entity_type or "",
+        entity_id=event.entity_id or "",
+        payload=event.payload or {},
     )

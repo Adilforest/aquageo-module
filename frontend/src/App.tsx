@@ -10,6 +10,7 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<MapPage />} />
+        <Route path="structures/:id" element={<MapPage />} />
         <Route path="catalog" element={<CatalogPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
       </Route>

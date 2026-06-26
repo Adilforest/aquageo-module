@@ -4,16 +4,30 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
+from common.audit import AuditEvent, record
+
 from .filters import StructureFilter
-from .models import AdminUnit, Basin, ObjectType, Structure
+from .models import AdminUnit, Basin, ObjectType, Structure, WaterBody
 from .permissions import ReadOnlyOrEngineer
 from .serializers import (
     AdminUnitSerializer,
     BasinSerializer,
     ObjectTypeSerializer,
+    StructureDetailSerializer,
     StructureGeoSerializer,
     StructureSerializer,
+    WaterBodySerializer,
 )
+
+
+def _json_safe(value):
+    """Make a field value JSON-serialisable for the audit payload."""
+    if value is None or isinstance(value, (str, int, float, bool, dict, list)):
+        return value
+    pk = getattr(value, "pk", None)
+    if pk is not None:
+        return str(pk)
+    return str(value)
 
 # Shared filter parameters, documented on the GeoJSON action (the list endpoint
 # gets them automatically from the FilterSet).
@@ -45,9 +59,33 @@ class StructureViewSet(ModelViewSet):
     ordering_fields = ["created_at", "name_ru", "wear_percent", "commissioning_year"]
     ordering = ["-created_at"]
 
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return StructureDetailSerializer
+        return StructureSerializer
+
     def perform_create(self, serializer):
         user = self.request.user
         serializer.save(created_by=user if user.is_authenticated else None)
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        changed = {}
+        for field, new in serializer.validated_data.items():
+            if getattr(instance, field, None) != new:
+                changed[field] = _json_safe(new)
+        obj = serializer.save()
+        if changed:
+            user = self.request.user
+            record(
+                AuditEvent(
+                    actor=str(user) if user.is_authenticated else "anonymous",
+                    action="update",
+                    entity_type="structure",
+                    entity_id=str(obj.pk),
+                    payload={"changed": changed},
+                )
+            )
 
     @extend_schema(parameters=GEOJSON_FILTER_PARAMS, responses=StructureGeoSerializer)
     @action(detail=False, methods=["get"], pagination_class=None)
@@ -77,9 +115,19 @@ class AdminUnitViewSet(ReadOnlyModelViewSet):
 
 
 class ObjectTypeViewSet(ReadOnlyModelViewSet):
-    """Object types — filter chip options."""
+    """Object types — filter chip options and edit-form schemas."""
 
     queryset = ObjectType.objects.all().order_by("code")
     serializer_class = ObjectTypeSerializer
     permission_classes = [AllowAny]
     pagination_class = None
+
+
+class WaterBodyViewSet(ReadOnlyModelViewSet):
+    """Water bodies — options for the structure edit form."""
+
+    queryset = WaterBody.objects.all().order_by("name_ru")
+    serializer_class = WaterBodySerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
+    filterset_fields = ["kind", "basin"]
