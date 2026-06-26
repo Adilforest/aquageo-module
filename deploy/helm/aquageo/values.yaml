@@ -62,7 +62,7 @@ env:
   DEBUG: "0"
   ALLOWED_HOSTS: "*"
   LLM_PROVIDER: gemini
-  LLM_MODEL: gemini/gemini-2.0-flash
+  LLM_MODEL: gemini/gemini-2.5-flash
   STORAGE_BACKEND: local
   # Произвольные доп. переменные (попадают в ConfigMap):
   extra: {}
