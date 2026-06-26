@@ -1,0 +1,32 @@
+AquaGeo «{{ .Release.Name }}» развёрнут в namespace «{{ .Release.Namespace }}».
+
+Компоненты:
+  web      : {{ include "aquageo.backendImage" . }}  (gunicorn :8000)
+  worker   : celery worker
+  beat     : celery beat
+{{- if .Values.frontend.enabled }}
+  frontend : {{ include "aquageo.frontendImage" . }}  (nginx :{{ .Values.frontend.containerPort }})
+{{- end }}
+  postgres : {{ if .Values.postgres.enabled }}встроенный ({{ .Values.postgres.image }}){{ else }}внешний{{ end }}
+  redis    : {{ if .Values.redis.enabled }}встроенный{{ else }}внешний{{ end }}
+
+Безопасность app-подов: runAsNonRoot, uid/gid={{ .Values.security.podSecurityContext.runAsUser }},
+fsGroup={{ .Values.security.podSecurityContext.fsGroup }}, readOnlyRootFilesystem, drop ALL caps.
+
+Доступ:
+{{- if .Values.ingress.enabled }}
+  http://{{ .Values.ingress.host }}/        (frontend)
+  http://{{ .Values.ingress.host }}/api/v1/ (API)
+{{- else }}
+  Ingress выключен. Проброс портов:
+    kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "aquageo.fullname" . }}-web 8000:{{ .Values.web.service.port }}
+{{- if .Values.frontend.enabled }}
+    kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "aquageo.fullname" . }}-frontend 8080:{{ .Values.frontend.service.port }}
+{{- end }}
+{{- end }}
+
+{{- if and (not .Values.secrets.existingSecret) (eq .Values.secrets.secretKey "change-me-in-production") (eq .Values.env.DEBUG "0") }}
+
+ВНИМАНИЕ: secrets.secretKey не задан, а DEBUG=0 — Django не стартует.
+Задайте --set secrets.secretKey=... или secrets.existingSecret.
+{{- end }}

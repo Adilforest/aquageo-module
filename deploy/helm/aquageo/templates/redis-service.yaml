@@ -1,0 +1,16 @@
+{{- if .Values.redis.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "aquageo.fullname" . }}-redis
+  labels:
+    {{- include "aquageo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  ports:
+    - port: {{ .Values.redis.service.port }}
+      targetPort: redis
+      name: redis
+  selector:
+    {{- include "aquageo.selectorLabels" (dict "ctx" . "component" "redis") | nindent 4 }}
+{{- end }}

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aquageo.fullname" . }}-env
+  labels:
+    {{- include "aquageo.labels" . | nindent 4 }}
+data:
+  DEBUG: {{ .Values.env.DEBUG | quote }}
+  ALLOWED_HOSTS: {{ .Values.env.ALLOWED_HOSTS | quote }}
+  REDIS_URL: {{ include "aquageo.redisUrl" . | quote }}
+  LLM_PROVIDER: {{ .Values.env.LLM_PROVIDER | quote }}
+  LLM_MODEL: {{ .Values.env.LLM_MODEL | quote }}
+  STORAGE_BACKEND: {{ .Values.env.STORAGE_BACKEND | quote }}
+  {{- range $k, $v := .Values.env.extra }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
