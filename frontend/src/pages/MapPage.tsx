@@ -5,7 +5,8 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
-import { useSearchParams } from "react-router-dom";
+import type { NavigateFunction } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
@@ -13,6 +14,7 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import { apiGet } from "../api/client";
 import FilterPanel from "../components/FilterPanel";
 import Legend from "../components/Legend";
+import ObjectCard from "../components/ObjectCard";
 import { conditionColor, typeIcon } from "../theme";
 import type { StructureFeature, StructureFeatureCollection } from "../types";
 
@@ -39,12 +41,15 @@ function markerIcon(code: string, condition: string): L.DivIcon {
 
 export default function MapPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { id: openId } = useParams();
   const [searchParams] = useSearchParams();
   const qs = searchParams.toString();
   const { data, isLoading, isError } = useQuery({
     queryKey: ["structures-geojson", qs],
     queryFn: () =>
       apiGet<StructureFeatureCollection>(`/structures/geojson/${qs ? `?${qs}` : ""}`),
+    placeholderData: (prev) => prev, // keep markers while refetching
   });
 
   const features = useMemo(
@@ -82,7 +87,7 @@ export default function MapPage() {
               positions={positions}
               pathOptions={{ color: conditionColor(f.properties.condition_status), weight: 3 }}
             >
-              <Popup>{popupContent(f, t)}</Popup>
+              <Popup>{popupContent(f, t, navigate)}</Popup>
             </Polyline>
           );
         })}
@@ -96,7 +101,7 @@ export default function MapPage() {
                 position={[lat, lon]}
                 icon={markerIcon(f.properties.type, f.properties.condition_status)}
               >
-                <Popup>{popupContent(f, t)}</Popup>
+                <Popup>{popupContent(f, t, navigate)}</Popup>
               </Marker>
             );
           })}
@@ -108,11 +113,12 @@ export default function MapPage() {
       {isError && <div className="map-overlay-count">{t("map.error")}</div>}
 
       <Legend types={typesPresent} />
+      {openId && <ObjectCard id={openId} />}
     </div>
   );
 }
 
-function popupContent(f: StructureFeature, t: TFunction) {
+function popupContent(f: StructureFeature, t: TFunction, navigate: NavigateFunction) {
   const p = f.properties;
   return (
     <div style={{ minWidth: 180 }}>
@@ -127,6 +133,9 @@ function popupContent(f: StructureFeature, t: TFunction) {
         />
         {t(`condition.${p.condition_status}`, { defaultValue: t("condition.nodata") })}
       </div>
+      <button className="popup-link" onClick={() => navigate(`/structures/${p.id}`)}>
+        {t("card.details")}
+      </button>
     </div>
   );
 }
