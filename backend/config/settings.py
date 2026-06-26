@@ -66,6 +66,7 @@ LOCAL_APPS = [
     "assessment",
     "ingestion",
     "workflow",
+    "reports",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -192,6 +193,7 @@ SPECTACULAR_SETTINGS = {
     "TAGS": [
         {"name": "structures", "description": "Объекты ГТС: CRUD, фильтры, GeoJSON, ряды"},
         {"name": "stats", "description": "Агрегаты для дашборда"},
+        {"name": "reports", "description": "Сводные отчёты с экспортом в PDF и Excel"},
         {"name": "reference", "description": "Справочники: бассейны, КАТО, типы, водные объекты"},
         {"name": "auth", "description": "JWT-аутентификация"},
     ],
