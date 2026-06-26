@@ -69,6 +69,9 @@ data/*
 !data/.gitkeep
 backend/data/*
 !backend/data/.gitkeep
+# Demo sample documents are committed (needed for the parsing demo on any machine)
+!backend/data/samples
+!backend/data/samples/**
 
 # ---------- OS / IDE ----------
 .DS_Store
