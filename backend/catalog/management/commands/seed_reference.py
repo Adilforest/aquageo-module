@@ -15,6 +15,16 @@ OBJECT_TYPES = [
             "length_km": {"type": "number"},
             "throughput_m3s": {"type": "number"},
             "lined": {"type": "boolean"},
+            # Fields from the organizers' dataset (issue #65).
+            "water_source": {"type": "string"},
+            "capacity_m3s": {"type": "number"},
+            "length_earthen_km": {"type": "number"},
+            "length_lined_km": {"type": "number"},
+            "efficiency_design": {"type": "number"},
+            "efficiency_actual": {"type": "number"},
+            "served_districts": {"type": "string"},
+            "rural_okrug": {"type": "string"},
+            "reported_condition": {"type": "string"},
         },
     }),
     ("hydropost", "Гидропост", "Гидробекет", "Hydropost", "point", {
