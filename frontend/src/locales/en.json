@@ -6,7 +6,8 @@
   "nav": {
     "map": "Map",
     "catalog": "Catalog",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "govflow": "Approvals"
   },
   "lang": {
     "ru": "RU",
@@ -155,5 +156,8 @@
     "act": "Act",
     "order": "Order",
     "source_file": "Source file"
+  },
+  "govflow": {
+    "title": "Application approvals"
   }
 }

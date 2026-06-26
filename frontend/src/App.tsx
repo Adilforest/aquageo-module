@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
 import Layout from "./components/Layout";
+import ApplicationsPage from "./pages/ApplicationsPage";
 import CatalogPage from "./pages/CatalogPage";
 import DashboardPage from "./pages/DashboardPage";
 import MapPage from "./pages/MapPage";
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="catalog" element={<CatalogPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="parse" element={<ParseReviewPage />} />
+        <Route path="applications" element={<ApplicationsPage />} />
       </Route>
     </Routes>
   );
