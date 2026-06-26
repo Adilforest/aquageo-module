@@ -39,6 +39,7 @@ spec:
               until python -c "import os,socket,urllib.parse as u; d=u.urlparse(os.environ['DATABASE_URL']); socket.create_connection((d.hostname, d.port or 5432), 3).close()" 2>/dev/null;
               do echo 'waiting for db...'; sleep 2; done &&
               python manage.py seed_reference &&
+              python manage.py create_demo_users &&
               python manage.py seed_demo &&
               python manage.py generate_hydropost_history --days {{ .Values.seed.days }} &&
               (python manage.py recompute_assessments || true)

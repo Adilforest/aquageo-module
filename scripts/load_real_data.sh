@@ -56,6 +56,9 @@ kcp "$ORG_XLS"                                       /tmp/data/datasetFromOrgani
 echo ">> Справочники (типы, бассейны, КАТО)"
 kx python manage.py seed_reference
 
+echo ">> Демо-аккаунты (viewer/engineer/manager/admin)"
+kx python manage.py create_demo_users
+
 echo ">> Импорт открытых источников: гидропосты + Overpass + HDX линии/полигоны"
 kx python manage.py import_data \
   --hydroposts /tmp/data/qazsu_hydroposts_334.csv \
