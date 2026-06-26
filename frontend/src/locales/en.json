@@ -62,6 +62,25 @@
     "title": "Analytics dashboard",
     "chartsPlaceholder": "Analytics charts will appear here."
   },
+  "dash": {
+    "byType": "Structure by type",
+    "condition": "Condition assessment",
+    "healthIndex": "index (0–100)",
+    "byTerritory": "By territory",
+    "basin": "Basin",
+    "district": "District",
+    "risk": "Risk monitoring (hydroposts)",
+    "flood": "Flood",
+    "lowWater": "Low water",
+    "forecastCrossing": "posts: forecast crosses the danger level",
+    "level": "Average level across posts, 90 days"
+  },
+  "risk": {
+    "critical": "critical",
+    "high": "high",
+    "watch": "watch",
+    "none": "normal"
+  },
   "catalog": {
     "title": "Object catalog",
     "placeholder": "The catalog table will appear here."
