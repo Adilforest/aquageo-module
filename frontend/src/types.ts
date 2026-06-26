@@ -85,3 +85,23 @@ export interface WaterBodyOption {
   name_ru: string;
   kind: string;
 }
+
+export interface StructureListItem {
+  id: string;
+  name_ru: string;
+  type: string;
+  type_name: string;
+  condition_status: string;
+  basin_name: string | null;
+  admin_unit_name: string | null;
+  commissioning_year: number | null;
+  wear_percent: string | null;
+  needs_geocoding: boolean;
+}
+
+export interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}

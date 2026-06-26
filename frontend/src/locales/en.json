@@ -83,7 +83,20 @@
   },
   "catalog": {
     "title": "Object catalog",
-    "placeholder": "The catalog table will appear here."
+    "placeholder": "The catalog table will appear here.",
+    "onlyNeedsGeocoding": "Only needing geocoding",
+    "needsGeocoding": "needs geocoding",
+    "cols": {
+      "name": "Name",
+      "type": "Type",
+      "condition": "Condition",
+      "basin": "Basin",
+      "district": "District",
+      "year": "Year",
+      "wear": "Wear, %",
+      "flag": "Flag"
+    },
+    "found": "Found: {{count}}"
   },
   "card": {
     "details": "Details",
