@@ -4,6 +4,8 @@ metadata:
   name: {{ include "aquageo.fullname" . }}-env
   labels:
     {{- include "aquageo.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
 data:
   DEBUG: {{ .Values.env.DEBUG | quote }}
   ALLOWED_HOSTS: {{ .Values.env.ALLOWED_HOSTS | quote }}

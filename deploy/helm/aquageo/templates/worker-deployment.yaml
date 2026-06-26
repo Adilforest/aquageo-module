@@ -5,6 +5,8 @@ metadata:
   labels:
     {{- include "aquageo.labels" . | nindent 4 }}
     app.kubernetes.io/component: worker
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   replicas: {{ .Values.worker.replicaCount }}
   selector:

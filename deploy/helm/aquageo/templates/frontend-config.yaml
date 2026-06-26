@@ -6,6 +6,8 @@ metadata:
   labels:
     {{- include "aquageo.labels" . | nindent 4 }}
     app.kubernetes.io/component: frontend
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
 data:
   default.conf: |
     server {
