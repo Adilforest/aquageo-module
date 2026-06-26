@@ -1,0 +1,34 @@
+# ДЕМО Argo CD Application — для презентации, НЕ для прода.
+# Использует дефолтный values.yaml: встроенные PostGIS + Redis, секреты чарт
+# генерит сам. Перед apply создай только pull-секрет ghcr-pull (см. deploy/README).
+# targetRevision поправь на ветку/тег, где лежит чарт (после merge — develop/main).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aquageo-demo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Adilforest/aquageo-module.git
+    targetRevision: feature/helm-chart-ci
+    path: deploy/helm/aquageo
+    helm:
+      # valueFiles НЕ указываем -> дефолты (встроенные БД/Redis).
+      parameters:
+        - { name: env.DEBUG, value: "1" }                       # демо: отдаёт static, понятные ошибки
+        - { name: secrets.secretKey, value: "demo-not-secret" }  # для презентации сойдёт
+        - { name: image.backend.tag, value: "latest" }
+        - { name: image.frontend.tag, value: "latest" }
+        - { name: imagePullSecret.existingSecret, value: "ghcr-pull" }
+        - { name: postgres.persistence.enabled, value: "false" } # эфемерно, без PVC/StorageClass
+        # - { name: secrets.geminiApiKey, value: "<key>" }       # вкл. ИИ-парсинг
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aquageo-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
