@@ -114,6 +114,15 @@ CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_TIMEZONE = "Asia/Almaty"
 
+# Periodic recompute of assessments + risk detectors (#18/#19). Scheduled here;
+# beat runs it in the stack — no need to trigger manually.
+CELERY_BEAT_SCHEDULE = {
+    "recompute-assessments-daily": {
+        "task": "monitoring.tasks.recompute_assessments_task",
+        "schedule": 24 * 60 * 60,  # once a day (seconds)
+    },
+}
+
 # --- Auth -----------------------------------------------------------------
 # Custom user defined early so cross-app FKs (created_by, reviewer_id, ...) bind
 # to it from the very first migrations.

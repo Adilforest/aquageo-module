@@ -111,13 +111,14 @@ class StructureDetailSerializer(StructureSerializer):
     next_inspection_due = serializers.SerializerMethodField()
     assessment_breakdown = serializers.SerializerMethodField()
     latest_reading = serializers.SerializerMethodField()
+    risk = serializers.SerializerMethodField()
 
     class Meta(StructureSerializer.Meta):
         fields = (
             *StructureSerializer.Meta.fields,
             "type_detail", "inspections", "attachments",
             "repair_status", "next_inspection_due", "assessment_breakdown",
-            "latest_reading",
+            "latest_reading", "risk",
         )
 
     def _latest_assessment(self, obj):
@@ -138,6 +139,12 @@ class StructureDetailSerializer(StructureSerializer):
     def get_assessment_breakdown(self, obj):
         a = self._latest_assessment(obj)
         return a.risk_scores if a else None
+
+    def get_risk(self, obj):
+        a = self._latest_assessment(obj)
+        if a and isinstance(a.risk_scores, dict):
+            return a.risk_scores.get("risk")
+        return None
 
     def get_latest_reading(self, obj):
         r = obj.readings.order_by("-ts").first()
