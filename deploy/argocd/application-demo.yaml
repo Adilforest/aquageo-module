@@ -22,6 +22,9 @@ spec:
         - { name: image.frontend.tag, value: "latest" }
         - { name: imagePullSecret.existingSecret, value: "ghcr-pull" }
         - { name: postgres.persistence.enabled, value: "false" } # эфемерно, без PVC/StorageClass
+        - { name: ingress.enabled, value: "true" }
+        - { name: ingress.className, value: "traefik" }
+        - { name: ingress.host, value: "aquageodemo.ruletk.com" }
         # - { name: secrets.geminiApiKey, value: "<key>" }       # вкл. ИИ-парсинг
   destination:
     server: https://kubernetes.default.svc
