@@ -219,6 +219,9 @@ class Structure(BaseModel):
         choices=LifecycleStatus.choices,
         default=LifecycleStatus.DRAFT,
     )
+    needs_geocoding = models.BooleanField(
+        "Требует геопривязки/проверки", default=False, db_index=True
+    )
     attributes = models.JSONField("Атрибуты (по схеме типа)", default=dict, blank=True)
 
     created_by = models.ForeignKey(
