@@ -116,9 +116,13 @@ def test_overdue_does_not_lower_already_critical(types):
 
 @pytest.mark.django_db
 def test_hydropost_danger_stays_critical(types):
-    s = mk(
-        types, code="hydropost", wear_percent=5, significance="local",
-        attributes={"level_mean": 320, "danger": 250},
+    from django.utils import timezone
+
+    from monitoring.models import HydropostReading
+
+    s = mk(types, code="hydropost", wear_percent=5, significance="local")
+    HydropostReading.objects.create(
+        structure=s, ts=timezone.now(), water_level=320, danger_level=250, synthetic=False
     )
     cond, repair, _, br = compute_assessment(s, as_of=OCT)
     assert cond == ConditionStatus.SERVICEABLE
