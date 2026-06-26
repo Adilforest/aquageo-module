@@ -20,6 +20,7 @@ KEY_PATHS = [
     "/api/v1/stats/by-territory/",
     "/api/v1/stats/risk-summary/",
     "/api/v1/stats/level-timeseries/",
+    "/api/v1/reports/condition-summary/",
     "/api/v1/basins/",
     "/api/v1/admin-units/",
     "/api/v1/object-types/",
