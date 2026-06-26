@@ -108,13 +108,14 @@ class StructureDetailSerializer(StructureSerializer):
     attachments = AttachmentSerializer(many=True, read_only=True)
     type_detail = ObjectTypeSerializer(source="type", read_only=True)
     repair_status = serializers.SerializerMethodField()
+    next_inspection_due = serializers.SerializerMethodField()
     assessment_breakdown = serializers.SerializerMethodField()
 
     class Meta(StructureSerializer.Meta):
         fields = (
             *StructureSerializer.Meta.fields,
             "type_detail", "inspections", "attachments",
-            "repair_status", "assessment_breakdown",
+            "repair_status", "next_inspection_due", "assessment_breakdown",
         )
 
     def _latest_assessment(self, obj):
@@ -127,6 +128,10 @@ class StructureDetailSerializer(StructureSerializer):
     def get_repair_status(self, obj):
         a = self._latest_assessment(obj)
         return a.repair_status if a else None
+
+    def get_next_inspection_due(self, obj):
+        a = self._latest_assessment(obj)
+        return a.next_inspection_due if a else None
 
     def get_assessment_breakdown(self, obj):
         a = self._latest_assessment(obj)

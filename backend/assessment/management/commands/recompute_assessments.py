@@ -18,16 +18,20 @@ class Command(BaseCommand):
         condition_counts = Counter()
         repair_counts = Counter()
         total = 0
+        overdue = 0
         qs = Structure.objects.select_related("type").prefetch_related("inspections")
         for structure in qs.iterator(chunk_size=500):
-            condition, repair, _ = save_assessment(structure)
+            condition, repair, _due, breakdown = save_assessment(structure)
             condition_counts[condition] += 1
             repair_counts[repair] += 1
+            if breakdown["interval"]["overdue"]:
+                overdue += 1
             total += 1
 
         self.stdout.write(self.style.SUCCESS(f"Recomputed {total} structures."))
         self.stdout.write("By condition_status: " + dict_str(condition_counts))
         self.stdout.write("By repair_status:    " + dict_str(repair_counts))
+        self.stdout.write(f"Overdue inspections: {overdue}")
 
 
 def dict_str(counter: Counter) -> str:
