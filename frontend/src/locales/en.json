@@ -23,6 +23,14 @@
     "condition": "Condition",
     "types": "Types"
   },
+  "filters": {
+    "title": "Filters",
+    "search": "Search by name…",
+    "basin": "Basin",
+    "district": "District",
+    "all": "All",
+    "reset": "Reset"
+  },
   "condition": {
     "serviceable": "Serviceable",
     "monitoring": "Monitoring",
