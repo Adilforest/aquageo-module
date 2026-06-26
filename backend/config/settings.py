@@ -157,7 +157,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Switch provider/model by editing env only; litellm reads the provider key
 # (GEMINI_API_KEY default, ANTHROPIC_API_KEY optional) from the environment.
 LLM_PROVIDER = env("LLM_PROVIDER", default="gemini")
-LLM_MODEL = env("LLM_MODEL", default="gemini/gemini-2.0-flash")
+LLM_MODEL = env("LLM_MODEL", default="gemini/gemini-2.5-flash")
 
 # --- Django REST Framework ------------------------------------------------
 REST_FRAMEWORK = {

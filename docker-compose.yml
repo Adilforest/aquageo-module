@@ -40,6 +40,8 @@ services:
       DATABASE_URL: postgis://aquageo:aquageo@db:5432/aquageo
       REDIS_URL: redis://redis:6379/0
       DEBUG: "1"
+      SECRET_KEY: aquageo-dev-secret-not-for-production
+      LLM_MODEL: gemini/gemini-2.5-flash
     env_file:
       - path: .env
         required: false
@@ -63,6 +65,8 @@ services:
       DATABASE_URL: postgis://aquageo:aquageo@db:5432/aquageo
       REDIS_URL: redis://redis:6379/0
       DEBUG: "1"
+      SECRET_KEY: aquageo-dev-secret-not-for-production
+      LLM_MODEL: gemini/gemini-2.5-flash
     env_file:
       - path: .env
         required: false
@@ -83,6 +87,8 @@ services:
       DATABASE_URL: postgis://aquageo:aquageo@db:5432/aquageo
       REDIS_URL: redis://redis:6379/0
       DEBUG: "1"
+      SECRET_KEY: aquageo-dev-secret-not-for-production
+      LLM_MODEL: gemini/gemini-2.5-flash
     env_file:
       - path: .env
         required: false
