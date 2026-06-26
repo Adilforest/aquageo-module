@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import AuthControl from "./AuthControl";
 import LanguageSwitcher from "./LanguageSwitcher";
+import RegionSwitcher from "./RegionSwitcher";
 
 const NAV = [
   { to: "/", key: "map", icon: "map" },
@@ -47,6 +48,7 @@ export default function Layout() {
         <header className="header">
           <h1>{t(TITLE_BY_PATH[pathname] ?? "app.title")}</h1>
           <div className="header-actions">
+            <RegionSwitcher />
             <AuthControl />
             <LanguageSwitcher />
           </div>

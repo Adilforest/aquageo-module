@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import L from "leaflet";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import type { NavigateFunction } from "react-router-dom";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -37,6 +37,39 @@ function markerIcon(code: string, condition: string): L.DivIcon {
       `box-shadow:0 1px 4px rgba(0,0,0,.4)">` +
       `<span class="material-symbols-outlined" style="color:#fff;font-size:16px">${icon}</span></div>`,
   });
+}
+
+// Recenter the map to the loaded features when the region scope changes (#33).
+// Watches the `region` param only, so ordinary filtering doesn't fight the user.
+function FitOnRegion({ features }: { features: StructureFeature[] }) {
+  const map = useMap();
+  const [sp] = useSearchParams();
+  const region = sp.get("region") ?? "";
+  const lastFit = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (region === lastFit.current) return;
+    if (!region) {
+      lastFit.current = "";
+      return;
+    }
+    if (!features.length) return; // wait until the new region's features arrive
+    const latlngs: LatLng[] = features.flatMap((f) => {
+      if (f.geometry!.type === "Point") {
+        const [lon, lat] = f.geometry!.coordinates as [number, number];
+        return [[lat, lon] as LatLng];
+      }
+      return (f.geometry!.coordinates as [number, number][]).map(
+        ([lon, lat]) => [lat, lon] as LatLng,
+      );
+    });
+    if (latlngs.length) {
+      map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40], maxZoom: 12 });
+      lastFit.current = region;
+    }
+  }, [region, features, map]);
+
+  return null;
 }
 
 export default function MapPage() {
@@ -77,6 +110,7 @@ export default function MapPage() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <FitOnRegion features={features} />
 
         {lines.map((f) => {
           const coords = f.geometry!.coordinates as [number, number][];
