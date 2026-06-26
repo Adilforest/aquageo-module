@@ -91,6 +91,14 @@ class StructureViewSet(ModelViewSet):
     ordering_fields = ["created_at", "name_ru", "wear_percent", "commissioning_year"]
     ordering = ["-created_at"]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Parse-draft results (#22) are awaiting review — keep them out of the
+        # public list/map, but still retrievable by id (review screen #24).
+        if self.action in ("list", "geojson"):
+            qs = qs.exclude(origin_parse_jobs__isnull=False)
+        return qs
+
     def get_serializer_class(self):
         if self.action == "retrieve":
             return StructureDetailSerializer
