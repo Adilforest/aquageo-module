@@ -71,3 +71,30 @@ migrate-job помечен `helm.sh/hook: pre-install,pre-upgrade` и
 helm lint deploy/helm/aquageo
 helm template aquageo deploy/helm/aquageo | kubectl apply --dry-run=client -f -
 ```
+
+## Автообновление образов на каждый push в main
+
+Механизм (GitOps, без записи в защищённый `main`):
+
+1. push в `main` → workflow **Build & Push Images** собирает образы и пушит
+   теги `latest` + `sha-<short>` в ghcr;
+2. job `cd-bump` публикует ветку **`demo`** (зеркало `main`) с проставленным
+   `sha`-тегом в `values-demo.yaml`;
+3. Argo CD Application следит за веткой `demo` (`automated` + `selfHeal`) и
+   передеплоивает на новый `sha`-тег.
+
+Чтобы это работало, Argo-приложение должно **следить за веткой `demo`**, а не
+`main`. Готовый манифест — `deploy/argocd/application-demo.yaml`
+(`targetRevision: demo`, `valueFiles: [values-demo.yaml]`). Применить один раз:
+
+```bash
+kubectl apply -f deploy/argocd/application-demo.yaml
+```
+
+`image.pullPolicy: Always` выставлен во всех values — узел перетягивает образ
+даже при совпадении тега. Так как `cd-bump` использует неизменяемые `sha`-теги,
+передеплой происходит в любом случае (новый тег → новый pull).
+
+> Если приложение следит за `main` с тегом `latest`, авто-передеплоя НЕ будет:
+> тег в git не меняется, Argo не видит диффа. Нужно либо ветка `demo` (выше),
+> либо Argo CD Image Updater (следит за digest `latest` в ghcr напрямую).
