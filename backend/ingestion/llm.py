@@ -30,7 +30,7 @@ class LLMError(Exception):
 
 
 def active_model() -> str:
-    return getattr(settings, "LLM_MODEL", "gemini/gemini-2.0-flash")
+    return getattr(settings, "LLM_MODEL", "gemini/gemini-2.5-flash")
 
 
 def extract_structured(
