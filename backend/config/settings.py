@@ -62,6 +62,7 @@ LOCAL_APPS = [
     "accounts",
     "common",
     "catalog",
+    "monitoring",
     "assessment",
 ]
 

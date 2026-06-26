@@ -110,12 +110,14 @@ class StructureDetailSerializer(StructureSerializer):
     repair_status = serializers.SerializerMethodField()
     next_inspection_due = serializers.SerializerMethodField()
     assessment_breakdown = serializers.SerializerMethodField()
+    latest_reading = serializers.SerializerMethodField()
 
     class Meta(StructureSerializer.Meta):
         fields = (
             *StructureSerializer.Meta.fields,
             "type_detail", "inspections", "attachments",
             "repair_status", "next_inspection_due", "assessment_breakdown",
+            "latest_reading",
         )
 
     def _latest_assessment(self, obj):
@@ -136,6 +138,20 @@ class StructureDetailSerializer(StructureSerializer):
     def get_assessment_breakdown(self, obj):
         a = self._latest_assessment(obj)
         return a.risk_scores if a else None
+
+    def get_latest_reading(self, obj):
+        r = obj.readings.order_by("-ts").first()
+        if not r:
+            return None
+        return {
+            "ts": r.ts,
+            "water_level": r.water_level,
+            "danger_level": r.danger_level,
+            "discharge": r.discharge,
+            "water_temp": r.water_temp,
+            "status_code": r.status_code,
+            "synthetic": r.synthetic,
+        }
 
 
 class StructureGeoSerializer(GeoFeatureModelSerializer):
