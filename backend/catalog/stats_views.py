@@ -49,7 +49,7 @@ def filtered_structures(request):
 class ByTypeView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(parameters=FILTER_PARAMS, responses=OpenApiTypes.OBJECT)
+    @extend_schema(tags=["stats"], parameters=FILTER_PARAMS, responses=OpenApiTypes.OBJECT)
     def get(self, request):
         rows = (
             filtered_structures(request)
@@ -66,7 +66,7 @@ class ByTypeView(APIView):
 class ByConditionView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(parameters=FILTER_PARAMS, responses=OpenApiTypes.OBJECT)
+    @extend_schema(tags=["stats"], parameters=FILTER_PARAMS, responses=OpenApiTypes.OBJECT)
     def get(self, request):
         qs = filtered_structures(request)
         counts = {c: 0 for c in CONDITIONS}
@@ -83,6 +83,7 @@ class ByTerritoryView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
+        tags=["stats"],
         parameters=[*FILTER_PARAMS, OpenApiParameter("group", str, enum=["basin", "district"])],
         responses=OpenApiTypes.OBJECT,
     )
@@ -112,7 +113,7 @@ class ByTerritoryView(APIView):
 class RiskSummaryView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(parameters=FILTER_PARAMS, responses=OpenApiTypes.OBJECT)
+    @extend_schema(tags=["stats"], parameters=FILTER_PARAMS, responses=OpenApiTypes.OBJECT)
     def get(self, request):
         hp = filtered_structures(request).filter(type__code="hydropost")
         flood = {"critical": 0, "high": 0, "watch": 0, "none": 0}
@@ -140,6 +141,7 @@ class LevelTimeseriesView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
+        tags=["stats"],
         parameters=[*FILTER_PARAMS, OpenApiParameter("days", int)],
         responses=OpenApiTypes.OBJECT,
     )
