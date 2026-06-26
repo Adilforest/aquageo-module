@@ -102,14 +102,35 @@ class StructureSerializer(serializers.ModelSerializer):
 
 
 class StructureDetailSerializer(StructureSerializer):
-    """Retrieve serializer: adds inspections and attachments for the card."""
+    """Retrieve serializer: adds inspections, attachments, assessment breakdown."""
 
     inspections = InspectionSerializer(many=True, read_only=True)
     attachments = AttachmentSerializer(many=True, read_only=True)
     type_detail = ObjectTypeSerializer(source="type", read_only=True)
+    repair_status = serializers.SerializerMethodField()
+    assessment_breakdown = serializers.SerializerMethodField()
 
     class Meta(StructureSerializer.Meta):
-        fields = (*StructureSerializer.Meta.fields, "type_detail", "inspections", "attachments")
+        fields = (
+            *StructureSerializer.Meta.fields,
+            "type_detail", "inspections", "attachments",
+            "repair_status", "assessment_breakdown",
+        )
+
+    def _latest_assessment(self, obj):
+        if not hasattr(self, "_assessment_cache"):
+            self._assessment_cache = {}
+        if obj.pk not in self._assessment_cache:
+            self._assessment_cache[obj.pk] = obj.assessments.first()
+        return self._assessment_cache[obj.pk]
+
+    def get_repair_status(self, obj):
+        a = self._latest_assessment(obj)
+        return a.repair_status if a else None
+
+    def get_assessment_breakdown(self, obj):
+        a = self._latest_assessment(obj)
+        return a.risk_scores if a else None
 
 
 class StructureGeoSerializer(GeoFeatureModelSerializer):
