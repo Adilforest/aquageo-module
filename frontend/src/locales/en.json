@@ -31,6 +31,13 @@
     "all": "All",
     "reset": "Reset"
   },
+  "reports": {
+    "title": "Reports & export",
+    "allObjects": "Condition summary report across all objects.",
+    "withFilters": "Condition summary report reflecting the active filters.",
+    "exportPdf": "Download PDF",
+    "exportExcel": "Download Excel"
+  },
   "condition": {
     "serviceable": "Serviceable",
     "monitoring": "Monitoring",

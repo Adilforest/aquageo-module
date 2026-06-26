@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import KpiCards from "../components/KpiCards";
 import ConditionGauge from "../components/dashboard/ConditionGauge";
 import LevelChart from "../components/dashboard/LevelChart";
+import ReportsBlock from "../components/dashboard/ReportsBlock";
 import RiskBlock from "../components/dashboard/RiskBlock";
 import TerritoryBars from "../components/dashboard/TerritoryBars";
 import TypeDonut from "../components/dashboard/TypeDonut";
@@ -35,6 +36,7 @@ export default function DashboardPage() {
         <Card title={t("dash.level")} wide>
           <LevelChart />
         </Card>
+        <ReportsBlock />
       </div>
     </div>
   );
