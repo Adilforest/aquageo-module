@@ -18,6 +18,7 @@ FILTER_PARAMS = [
     OpenApiParameter("condition", str, many=True),
     OpenApiParameter("basin", str),
     OpenApiParameter("district", str),
+    OpenApiParameter("region", str),
     OpenApiParameter("search", str),
 ]
 
@@ -73,3 +74,31 @@ class LevelTimeseriesView(APIView):
         except ValueError:
             days = 90
         return Response(stats_service.level_timeseries(filtered_structures(request), days))
+
+
+class RegionsView(APIView):
+    """List top-level regions (AdminUnit level=region) with object counts (#33).
+
+    The scaling mechanism: new regions are new KATO rows, the switcher reads this
+    list. ``count`` includes structures in the region and all its descendants.
+    """
+
+    permission_classes = [AllowAny]
+
+    @extend_schema(tags=["reference"], responses=OpenApiTypes.OBJECT)
+    def get(self, request):
+        from .models import AdminUnit, Structure
+        from .regions import region_descendant_katos
+
+        regions = AdminUnit.objects.filter(level=AdminUnit.Level.REGION).order_by("name_ru")
+        out = []
+        for region in regions:
+            katos = region_descendant_katos(region.kato)
+            out.append({
+                "kato": region.kato,
+                "name_ru": region.name_ru,
+                "name_kk": region.name_kk,
+                "name_en": region.name_en,
+                "count": Structure.objects.filter(admin_unit_id__in=katos).count(),
+            })
+        return Response(out)
