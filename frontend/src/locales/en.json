@@ -65,5 +65,56 @@
   "catalog": {
     "title": "Object catalog",
     "placeholder": "The catalog table will appear here."
+  },
+  "card": {
+    "details": "Details",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saveError": "Failed to save",
+    "noPhoto": "No photo",
+    "waterObject": "Water body",
+    "coordinates": "Coordinates",
+    "year": "Commissioned",
+    "basin": "Basin",
+    "district": "District",
+    "responsibleOrg": "Responsible org",
+    "significance": "Significance",
+    "condition": "Condition",
+    "techParams": "Technical parameters",
+    "inspections": "Inspections",
+    "documents": "Documents",
+    "noInspections": "No inspections",
+    "noDocuments": "No documents",
+    "nameRu": "Name (RU)",
+    "nameKk": "Name (KK)",
+    "nameEn": "Name (EN)"
+  },
+  "significance": {
+    "republican": "Republican",
+    "regional": "Regional",
+    "district": "District",
+    "local": "Local"
+  },
+  "roles": {
+    "viewer": "Viewer",
+    "engineer": "Engineer",
+    "manager": "Manager",
+    "admin": "Admin"
+  },
+  "auth": {
+    "login": "Sign in",
+    "logout": "Sign out",
+    "username": "Username",
+    "password": "Password",
+    "invalid": "Invalid username or password",
+    "error": "Sign-in error"
+  },
+  "attachment": {
+    "photo": "Photo",
+    "passport": "Passport",
+    "act": "Act",
+    "order": "Order",
+    "source_file": "Source file"
   }
 }

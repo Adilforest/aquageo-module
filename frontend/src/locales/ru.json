@@ -65,5 +65,56 @@
   "catalog": {
     "title": "Каталог объектов",
     "placeholder": "Таблица каталога появится здесь."
+  },
+  "card": {
+    "details": "Подробнее",
+    "edit": "Редактировать",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "saveError": "Не удалось сохранить",
+    "noPhoto": "Фото нет",
+    "waterObject": "Водный объект",
+    "coordinates": "Координаты",
+    "year": "Год ввода",
+    "basin": "Бассейн",
+    "district": "Район",
+    "responsibleOrg": "Ответственная организация",
+    "significance": "Значимость",
+    "condition": "Тех. состояние",
+    "techParams": "Технические параметры",
+    "inspections": "Осмотры",
+    "documents": "Документы",
+    "noInspections": "Осмотров нет",
+    "noDocuments": "Документов нет",
+    "nameRu": "Название (RU)",
+    "nameKk": "Название (KK)",
+    "nameEn": "Название (EN)"
+  },
+  "significance": {
+    "republican": "Республиканское",
+    "regional": "Областное",
+    "district": "Районное",
+    "local": "Местное"
+  },
+  "roles": {
+    "viewer": "Гость",
+    "engineer": "Инженер",
+    "manager": "Руководитель",
+    "admin": "Администратор"
+  },
+  "auth": {
+    "login": "Войти",
+    "logout": "Выйти",
+    "username": "Логин",
+    "password": "Пароль",
+    "invalid": "Неверный логин или пароль",
+    "error": "Ошибка входа"
+  },
+  "attachment": {
+    "photo": "Фото",
+    "passport": "Паспорт",
+    "act": "Акт",
+    "order": "Приказ",
+    "source_file": "Исходный файл"
   }
 }
