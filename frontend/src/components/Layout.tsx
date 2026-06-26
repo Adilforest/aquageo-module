@@ -9,12 +9,14 @@ const NAV = [
   { to: "/", key: "map", icon: "map" },
   { to: "/catalog", key: "catalog", icon: "table_rows" },
   { to: "/dashboard", key: "dashboard", icon: "monitoring" },
+  { to: "/applications", key: "govflow", icon: "task" },
 ];
 
 const TITLE_BY_PATH: Record<string, string> = {
   "/": "map.title",
   "/catalog": "catalog.title",
   "/dashboard": "dashboard.title",
+  "/applications": "govflow.title",
 };
 
 export default function Layout() {
