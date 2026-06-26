@@ -1,7 +1,12 @@
 from datetime import timedelta
 
 from django.utils import timezone
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -50,6 +55,29 @@ GEOJSON_FILTER_PARAMS = [
 ]
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=["structures"],
+        parameters=[
+            OpenApiParameter(
+                "type", str, many=True,
+                description="Тип объекта (повторяемый, OR)",
+                examples=[OpenApiExample("plotины+дамбы", value=["dam", "dike"])],
+            ),
+            OpenApiParameter(
+                "condition", str, many=True,
+                description="Состояние (повторяемый, OR)",
+                examples=[OpenApiExample("ремонт+авария", value=["repair", "emergency"])],
+            ),
+            OpenApiParameter("needs_geocoding", bool, description="Требует геопривязки"),
+        ],
+    ),
+    retrieve=extend_schema(tags=["structures"]),
+    create=extend_schema(tags=["structures"]),
+    update=extend_schema(tags=["structures"]),
+    partial_update=extend_schema(tags=["structures"]),
+    destroy=extend_schema(tags=["structures"]),
+)
 class StructureViewSet(ModelViewSet):
     """CRUD for hydro structures, with filters, search and a GeoJSON map feed."""
 
@@ -91,7 +119,8 @@ class StructureViewSet(ModelViewSet):
                 )
             )
 
-    @extend_schema(parameters=GEOJSON_FILTER_PARAMS, responses=StructureGeoSerializer)
+    @extend_schema(tags=["structures"], parameters=GEOJSON_FILTER_PARAMS,
+                   responses=StructureGeoSerializer)
     @action(detail=False, methods=["get"], pagination_class=None)
     def geojson(self, request):
         """Filtered FeatureCollection for the map (same filters as the list).
@@ -103,6 +132,7 @@ class StructureViewSet(ModelViewSet):
         return Response(StructureGeoSerializer(qs, many=True).data)
 
     @extend_schema(
+        tags=["structures"],
         parameters=[OpenApiParameter("days", int, description="Окно (последние N дней)")],
         responses=HydropostReadingSerializer(many=True),
     )
@@ -124,6 +154,7 @@ class StructureViewSet(ModelViewSet):
         return Response(HydropostReadingSerializer(qs, many=True).data)
 
 
+@extend_schema(tags=["reference"])
 class BasinViewSet(ReadOnlyModelViewSet):
     """Basins — territory filter options."""
 
@@ -133,6 +164,7 @@ class BasinViewSet(ReadOnlyModelViewSet):
     pagination_class = None
 
 
+@extend_schema(tags=["reference"])
 class AdminUnitViewSet(ReadOnlyModelViewSet):
     """Administrative units (КАТО) — filterable by level (e.g. ?level=district)."""
 
@@ -143,6 +175,7 @@ class AdminUnitViewSet(ReadOnlyModelViewSet):
     filterset_fields = ["level", "parent"]
 
 
+@extend_schema(tags=["reference"])
 class ObjectTypeViewSet(ReadOnlyModelViewSet):
     """Object types — filter chip options and edit-form schemas."""
 
@@ -152,6 +185,7 @@ class ObjectTypeViewSet(ReadOnlyModelViewSet):
     pagination_class = None
 
 
+@extend_schema(tags=["reference"])
 class WaterBodyViewSet(ReadOnlyModelViewSet):
     """Water bodies — options for the structure edit form."""
 
