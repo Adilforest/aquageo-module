@@ -64,6 +64,7 @@ LOCAL_APPS = [
     "catalog",
     "monitoring",
     "assessment",
+    "ingestion",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -149,6 +150,12 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# --- LLM (provider-agnostic via litellm) ----------------------------------
+# Switch provider/model by editing env only; litellm reads the provider key
+# (GEMINI_API_KEY default, ANTHROPIC_API_KEY optional) from the environment.
+LLM_PROVIDER = env("LLM_PROVIDER", default="gemini")
+LLM_MODEL = env("LLM_MODEL", default="gemini/gemini-2.0-flash")
 
 # --- Django REST Framework ------------------------------------------------
 REST_FRAMEWORK = {
