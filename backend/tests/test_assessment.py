@@ -31,7 +31,7 @@ def mk(types, code="canal", **kwargs):
 @pytest.mark.django_db
 def test_wear_85_is_emergency(types):
     s = mk(types, wear_percent=85, commissioning_year=THIS_YEAR - 5)
-    cond, _, br = compute_assessment(s)
+    cond, _, _due, br = compute_assessment(s)
     assert cond == ConditionStatus.EMERGENCY
     assert br["base"] == ConditionStatus.EMERGENCY
 
@@ -43,7 +43,7 @@ def test_wear_10_young_ok_inspection_is_serviceable(types):
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
     )
-    cond, repair, br = compute_assessment(s)
+    cond, repair, _due, br = compute_assessment(s)
     assert cond == ConditionStatus.SERVICEABLE
     assert repair == "norm"
     assert br["escalation_total"] == 0
@@ -56,7 +56,7 @@ def test_wear_30_is_monitoring(types):
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
     )
-    cond, _, _ = compute_assessment(s)
+    cond, _, _due, _ = compute_assessment(s)
     assert cond == ConditionStatus.MONITORING
 
 
@@ -72,7 +72,7 @@ def test_wear_50_bad_inspection_two_accidents_escalates(types):
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.EMERGENCY,
     )
-    cond, _, br = compute_assessment(s)
+    cond, _, _due, br = compute_assessment(s)
     # base repair (wear 50); E = last(+2) + accidents>=2(+2) = 4 -> +1 level -> emergency
     assert br["escalation_total"] >= 3
     assert cond in (ConditionStatus.REPAIR, ConditionStatus.EMERGENCY)
@@ -86,13 +86,13 @@ def test_unknown_wear_uses_age(types):
         structure=young, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
     )
-    cond, _, br = compute_assessment(young)
+    cond, _, _due, br = compute_assessment(young)
     assert br["base_source"] == "age"
     assert br["base"] == ConditionStatus.SERVICEABLE
     assert cond == ConditionStatus.SERVICEABLE
 
     old = mk(types, commissioning_year=THIS_YEAR - 60)
-    cond_old, _, br_old = compute_assessment(old)
+    cond_old, _, _due, br_old = compute_assessment(old)
     assert br_old["base_source"] == "age"
     assert br_old["base"] == ConditionStatus.REPAIR
 
@@ -114,7 +114,7 @@ def test_repair_status_mapping(types, wear, expected_condition, expected_repair)
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
     )
-    cond, repair, _ = compute_assessment(s)
+    cond, repair, _due, _ = compute_assessment(s)
     assert cond == expected_condition
     assert repair == expected_repair
 
@@ -131,7 +131,7 @@ def test_hydropost_level_over_danger_is_critical_even_if_serviceable(types):
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
     )
-    cond, repair, br = compute_assessment(s)
+    cond, repair, _due, br = compute_assessment(s)
     assert cond == ConditionStatus.SERVICEABLE
     assert repair == "critical"
     assert "hydropost_danger_level" in br["overrides"]
@@ -147,7 +147,7 @@ def test_hydropost_level_below_danger_not_overridden(types):
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
     )
-    _, repair, br = compute_assessment(s)
+    _, repair, _due, br = compute_assessment(s)
     assert repair == "norm"
     assert br["overrides"] == []
 

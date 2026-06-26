@@ -1,13 +1,15 @@
-"""Condition assessment model (issue #16).
+"""Condition assessment + inspection-interval model (issues #16, #17).
 
-Pure function ``compute_assessment(structure)`` -> (condition_status,
-repair_status, breakdown). Thresholds are fixed by the spec; the breakdown
-(``risk_scores``) explains every factor for the object card.
+Pure function ``compute_assessment(structure, as_of=today)`` ->
+(condition_status, repair_status, next_inspection_due, breakdown).
 
-NOT handled here (issue #17): inspection-overdue override and significance.
+Thresholds/intervals/multipliers are fixed by the spec; ``breakdown``
+(stored in ``risk_scores``) explains every factor for the object card.
+``as_of`` parameterises "today" so seasonal logic and tests are deterministic.
 """
 from __future__ import annotations
 
+import calendar
 from datetime import date, timedelta
 
 from django.utils import timezone
@@ -16,7 +18,7 @@ from catalog.models import ConditionStatus
 
 from .models import ConditionAssessment, RepairStatus
 
-MODEL_VERSION = "condition-v1"
+MODEL_VERSION = "condition-v2"  # v2: adds inspection interval + overdue override
 
 # Severity ladder: serviceable < monitoring < repair < emergency.
 LEVELS = [
@@ -32,6 +34,32 @@ REPAIR_MAP = {
     ConditionStatus.REPAIR: RepairStatus.REPAIR,
     ConditionStatus.EMERGENCY: RepairStatus.CRITICAL,
 }
+
+REPAIR_RANK = {
+    RepairStatus.NORM: 0,
+    RepairStatus.INSPECT: 1,
+    RepairStatus.REPAIR: 2,
+    RepairStatus.CRITICAL: 3,
+}
+
+# Base inspection interval in months by condition.
+BASE_INTERVAL_MONTHS = {
+    ConditionStatus.SERVICEABLE: 36,
+    ConditionStatus.MONITORING: 12,
+    ConditionStatus.REPAIR: 6,
+    ConditionStatus.EMERGENCY: 1,
+}
+
+SIGNIFICANCE_MULT = {
+    "republican": 0.5,
+    "regional": 0.75,
+    "district": 1.0,
+    "local": 1.0,
+}
+
+# Flood-prone types: seasonal multiplier applies during the flood period.
+FLOOD_TYPES = {"hydropost", "dam", "dike", "reservoir", "spillway"}
+FLOOD_MONTHS = {4, 5, 6}  # April–June for the Jambyl region
 
 
 def _base_from_wear(wear_pct: float) -> str:
@@ -53,11 +81,7 @@ def _base_from_age(age_years: int) -> str:
 
 
 def _hydropost_override(structure) -> bool:
-    """Hydropost is critical when the water level reaches the danger level.
-
-    Primary: numeric level >= numeric danger (attributes level_mean/water_level
-    vs danger/danger_level). Fallback: the qazsu categorical danger_level=="danger".
-    """
+    """Hydropost is critical when the water level reaches the danger level."""
     if getattr(structure, "type_id", None) != "hydropost":
         return False
     attrs = structure.attributes or {}
@@ -71,15 +95,48 @@ def _hydropost_override(structure) -> bool:
     return str(attrs.get("danger_level", "")).strip().lower() == "danger"
 
 
-def compute_assessment(structure):
-    """Return (condition_status, repair_status, breakdown) for a structure."""
+def _add_months(d: date, months: int) -> date:
+    total = d.month - 1 + months
+    year = d.year + total // 12
+    month = total % 12 + 1
+    day = min(d.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def _interval(condition, structure, age, as_of):
+    """Return (interval_months, multiplier_breakdown) for the condition."""
+    base = BASE_INTERVAL_MONTHS[condition]
+    multipliers = []
+
+    sig = structure.significance or ""
+    sig_mult = SIGNIFICANCE_MULT.get(sig, 1.0)
+    multipliers.append({"code": "significance", "factor": sig_mult, "detail": sig or "—"})
+
+    age_mult = 0.75 if (age is not None and age > 50) else 1.0
+    multipliers.append({"code": "age", "factor": age_mult,
+                        "detail": f"возраст {age} лет" if age is not None else "—"})
+
+    flood = getattr(structure, "type_id", None) in FLOOD_TYPES and as_of.month in FLOOD_MONTHS
+    season_mult = 0.5 if flood else 1.0
+    multipliers.append({"code": "seasonal_flood", "factor": season_mult,
+                        "detail": "паводковый период" if flood else "вне паводка"})
+
+    product = 1.0
+    for m in multipliers:
+        product *= m["factor"]
+    interval = max(1, round(base * product))
+    return interval, base, multipliers
+
+
+def compute_assessment(structure, as_of: date | None = None):
+    """Return (condition_status, repair_status, next_inspection_due, breakdown)."""
+    if as_of is None:
+        as_of = date.today()
     factors: list[dict] = []
 
-    # --- age ---
-    current_year = date.today().year
     age = None
     if structure.commissioning_year:
-        age = current_year - structure.commissioning_year
+        age = as_of.year - structure.commissioning_year
 
     # --- base from wear, else age, else serviceable ---
     wear = structure.wear_percent
@@ -101,7 +158,6 @@ def compute_assessment(structure):
 
     # --- escalation E ---
     escalation = 0
-
     if age is not None and age > 50:
         escalation += 1
         factors.append({"code": "age_over_50", "points": 1, "detail": f"возраст {age} лет"})
@@ -120,7 +176,7 @@ def compute_assessment(structure):
             factors.append({"code": "last_inspection_remarks", "points": 1,
                             "detail": f"последний осмотр: {obs}"})
 
-    stale_before = date.today() - timedelta(days=3 * 365)
+    stale_before = as_of - timedelta(days=3 * 365)
     if last is None:
         escalation += 1
         factors.append({"code": "no_inspection", "points": 1, "detail": "осмотров нет"})
@@ -155,6 +211,25 @@ def compute_assessment(structure):
         repair = RepairStatus.CRITICAL
         overrides.append("hydropost_danger_level")
 
+    # --- inspection interval / next due ---
+    interval_months, base_months, multipliers = _interval(condition, structure, age, as_of)
+
+    if last is not None:
+        anchor, anchor_source = last.inspected_at, "last_inspection"
+    elif structure.commissioning_year:
+        anchor, anchor_source = date(structure.commissioning_year, 1, 1), "commissioning_year"
+    else:
+        anchor, anchor_source = as_of, "today"
+    next_due = _add_months(anchor, interval_months)
+
+    # --- overdue override (#17): raise repair_status to at least inspect ---
+    overdue = next_due < as_of
+    if overdue and REPAIR_RANK[repair] < REPAIR_RANK[RepairStatus.INSPECT]:
+        repair = RepairStatus.INSPECT
+        overrides.append("overdue_inspection")
+    elif overdue:
+        overrides.append("overdue_inspection")  # already >= inspect, recorded for the card
+
     breakdown = {
         "model_version": MODEL_VERSION,
         "wear_percent": wear_pct,
@@ -167,19 +242,29 @@ def compute_assessment(structure):
         "condition_status": condition,
         "repair_status": repair,
         "overrides": overrides,
+        "interval": {
+            "base_months": base_months,
+            "multipliers": multipliers,
+            "interval_months": interval_months,
+            "anchor": anchor.isoformat(),
+            "anchor_source": anchor_source,
+            "next_inspection_due": next_due.isoformat(),
+            "overdue": overdue,
+        },
     }
-    return condition, repair, breakdown
+    return condition, repair, next_due, breakdown
 
 
-def save_assessment(structure):
+def save_assessment(structure, as_of: date | None = None):
     """Compute and persist the current assessment; update Structure.condition_status."""
-    condition, repair, breakdown = compute_assessment(structure)
+    condition, repair, next_due, breakdown = compute_assessment(structure, as_of)
     ConditionAssessment.objects.update_or_create(
         structure=structure,
         defaults={
             "assessed_at": timezone.now(),
             "condition_status": condition,
             "repair_status": repair,
+            "next_inspection_due": next_due,
             "risk_scores": breakdown,
             "model_version": MODEL_VERSION,
         },
@@ -187,4 +272,4 @@ def save_assessment(structure):
     if structure.condition_status != condition:
         structure.condition_status = condition
         structure.save(update_fields=["condition_status", "updated_at"])
-    return condition, repair, breakdown
+    return condition, repair, next_due, breakdown
