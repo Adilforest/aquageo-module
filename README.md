@@ -36,25 +36,77 @@ data/        исходные датасеты (в .gitignore)
 docs/        документация
 ```
 
+## 🚀 Живое демо
+
+**https://aquageodemo.ruletk.com/**
+
+Аккаунты для входа — в разделе [Демо-аккаунты](#демо-аккаунты) ниже.
+
 ## Запуск (dev)
 
 ```bash
 # 1. Конфигурация
-cp .env.example .env        # заполнить SECRET_KEY и GEMINI_API_KEY
+cp .env.example .env        # заполнить SECRET_KEY и GEMINI_API_KEY (для ИИ-парсинга)
 
-# 2. Поднять стек (db + redis + web + worker + beat + frontend)
-docker compose up --build
+# 2. Поднять весь стек (db + redis + web + worker + beat + frontend).
+#    Контейнер web сам применяет миграции при старте.
+docker compose up --build -d
 
-# 3. Применить миграции и засидить справочники/данные
-docker compose exec web python manage.py migrate
-docker compose exec web python manage.py seed_reference
-docker compose exec web python manage.py import_data
+# 3. Одной командой: справочники + импорт открытых данных + реалистичный
+#    демо-сид + пересчёт оценок + демо-аккаунты (идемпотентно).
+docker compose exec web python manage.py bootstrap_demo
+```
+
+`bootstrap_demo` последовательно выполняет:
+`seed_reference` → `import_data` + `import_org_dataset` → `generate_hydropost_history`
+→ `seed_demo_state` (расставляет правдоподобный износ и свежие осмотры, чтобы каталог
+не выглядел «сплошь аварийным») → `recompute_assessments` (пересчёт состояний и
+риска) → `create_demo_users` (печатает таблицу аккаунтов).
+
+> Сырые датасеты лежат в `backend/data/` (в `.gitignore`). Если их нет, шаги
+> импорта пропускаются с предупреждением — добавьте файлы или запустите
+> `bootstrap_demo --skip-import` для работы только со справочниками.
+
+Отдельные шаги при необходимости:
+
+```bash
+docker compose exec web python manage.py seed_demo_state      # только реалистичный сид
+docker compose exec web python manage.py recompute_assessments
+docker compose exec web python manage.py create_demo_users    # пере-создать аккаунты
 ```
 
 После старта:
 - Backend / API: http://localhost:8000/api/v1/
 - OpenAPI / Swagger: http://localhost:8000/api/v1/schema/swagger-ui/
 - Frontend: http://localhost:5173/
+- Django admin: http://localhost:8000/admin/ (логин `admin`, см. ниже)
+
+## Демо-аккаунты
+
+Создаются командой `create_demo_users` (или `bootstrap_demo`). Пароли
+детерминированы — это **демо-учётки**, не для продакшена.
+
+| Логин      | Пароль             | Роль      | Что может на демо                                                      |
+|------------|--------------------|-----------|-----------------------------------------------------------------------|
+| `viewer`   | `aquageo-viewer`   | viewer    | Карта, каталог, дашборд — только просмотр.                             |
+| `engineer` | `aquageo-engineer` | engineer  | Просмотр + ИИ-парсинг (`/parse`), создание черновиков, подача заявки.  |
+| `manager`  | `aquageo-manager`  | manager   | Согласование/отклонение заявок, ЭЦП-заглушка и PDF-приказ, видит всё.  |
+| `admin`    | `aquageo-admin`    | admin     | Полный доступ + Django admin `/admin/` (суперпользователь).            |
+
+## Сценарий показа (демо)
+
+1. **Карта с фильтрами** — открыть `/`, фильтры по состоянию/бассейну/району,
+   цвет маркера = тех. состояние; переключатель области (скейл на регионы).
+2. **Карточка объекта** — клик по маркеру: паспорт, состояние, период осмотра.
+3. **Дашборд с прогнозом** — `/dashboard`: распределение по состояниям, риск-
+   детекторы (паводок/маловодье) и краткосрочный прогноз уровня.
+4. **ИИ-парсинг** (под `engineer`) — `/parse`, загрузить
+   `backend/data/samples/hydropost_sample.xlsx` → «Распознать»: поля с
+   индикатором уверенности, бейдж сверки с базой, мини-карта.
+5. **Заявка** (под `engineer`) — на экране парсинга «Отправить на согласование».
+6. **Согласование с приказом** (под `manager`) — `/applications`: открыть заявку,
+   «Согласовать» → ЭЦП-заглушка (`cert_subject`), PDF-приказ (скачать), объект
+   становится «Опубликован».
 
 > Инфраструктура (docker-compose, миграции, seed-команды) подключается по мере
 > прохождения бэклога — см. `ISSUES.md` и `WORKFLOW.md`.
