@@ -51,9 +51,14 @@ class Command(BaseCommand):
                        lambda: call_command("import_org_dataset"))
             self._step("История гидропостов (generate_hydropost_history)",
                        lambda: call_command("generate_hydropost_history"))
+        else:
+            # No raw datasets: create a compact set of demo objects programmatically
+            # (the deploy `seed_demo` command) so there is something to assess.
+            self._step("Компактные демо-объекты (seed_demo)",
+                       lambda: call_command("seed_demo"))
 
-        self._step("Реалистичный демо-сид (seed_demo)",
-                   lambda: call_command("seed_demo", fresh_share=fresh_share),
+        self._step("Реалистичный демо-сид (seed_demo_state)",
+                   lambda: call_command("seed_demo_state", fresh_share=fresh_share),
                    required=True)
         self._step("Пересчёт оценок (recompute_assessments)",
                    lambda: call_command("recompute_assessments"), required=True)
