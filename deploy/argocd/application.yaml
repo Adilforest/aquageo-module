@@ -1,0 +1,31 @@
+# Пример Argo CD Application для AquaGeo. Подставьте repoURL/targetRevision и
+# свой источник секретов. migrate-job помечен как PreSync-hook — Argo прогонит
+# миграции до синка основных манифестов.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aquageo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Adilforest/aquageo-module.git
+    targetRevision: main
+    path: deploy/helm/aquageo
+    helm:
+      valueFiles:
+        - values-prod.yaml
+      # Секреты задаём не здесь, а через secrets.existingSecret /
+      # imagePullSecret.existingSecret в кластере.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aquageo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

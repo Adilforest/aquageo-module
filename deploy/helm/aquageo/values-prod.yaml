@@ -1,0 +1,46 @@
+# Пример прод-оверрайда: внешние managed Postgres/Redis, приватный ghcr,
+# фиксированный тег образа. Секреты сюда не коммитим — через --set или
+# secrets.existingSecret / imagePullSecret.existingSecret.
+
+image:
+  backend: { tag: "v0.1.0" }
+  frontend: { tag: "v0.1.0" }
+  pullPolicy: IfNotPresent
+
+imagePullSecret:
+  create: false
+  existingSecret: ghcr-pull   # заранее созданный docker-registry secret
+
+env:
+  DEBUG: "0"
+  ALLOWED_HOSTS: "aquageo.example.kz"
+
+secrets:
+  existingSecret: aquageo-app   # SECRET_KEY/DATABASE_URL/GEMINI_API_KEY заранее в кластере
+
+postgres:
+  enabled: false
+externalDatabase:
+  url: ""   # postgis://user:pass@managed-host:5432/aquageo  (через --set/секрет)
+
+redis:
+  enabled: false
+externalRedis:
+  url: "redis://managed-redis:6379/0"
+
+web:
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+  podDisruptionBudget:
+    enabled: true
+
+ingress:
+  enabled: true
+  className: nginx
+  host: aquageo.example.kz
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    - hosts: [aquageo.example.kz]
+      secretName: aquageo-tls

@@ -1,0 +1,17 @@
+apiVersion: v2
+name: aquageo
+description: >-
+  Модуль портала водных ресурсов (AquaGeo): Django + DRF + GeoDjango, Celery
+  (worker/beat), Redis, PostGIS и React-фронтенд. Чарт рассчитан на доставку
+  через Argo CD и на работу под строгим securityContext (non-root, uid/gid 65532).
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - django
+  - celery
+  - postgis
+  - geospatial
+home: https://github.com/Adilforest/aquageo-module
+maintainers:
+  - name: Adilforest
