@@ -2,7 +2,8 @@
 
 The approval flow applies ONLY to creating new objects (kind=create) — and
 later decommission. Editing existing structures is a direct PATCH (#12) and is
-NOT wrapped here. Signature/PDF/publish arrive in #26/#27.
+NOT wrapped here. Approving a create application produces a stub Signature (#26)
+and a generated ApprovalOrder PDF (#27), then publishes the structure.
 """
 from django.conf import settings
 from django.db import models
@@ -50,3 +51,50 @@ class Application(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.get_kind_display()} {self.structure_id} [{self.status}]"
+
+
+class Signature(BaseModel):
+    """Stub digital signature (#26).
+
+    Imitates an ECP/NCALayer signature WITHOUT any real crypto: ``valid`` is
+    always true and ``cert_subject`` is a fabricated demo subject. It marks who
+    approved an application and when, so the gov-flow can show a "signed" state.
+    """
+
+    application = models.ForeignKey(
+        Application, verbose_name="Заявка", on_delete=models.CASCADE,
+        related_name="signatures",
+    )
+    signer = models.CharField("Подписант", max_length=255, blank=True)
+    signed_at = models.DateTimeField("Подписано")
+    cert_subject = models.CharField("Субъект сертификата", max_length=512, blank=True)
+    cms_blob = models.TextField("CMS (заглушка)", blank=True)
+    valid = models.BooleanField("Подпись валидна", default=True)
+
+    class Meta:
+        verbose_name = "Подпись (ЭЦП-заглушка)"
+        verbose_name_plural = "Подписи (ЭЦП-заглушка)"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Подпись {self.signer} для {self.application_id} [{self.valid}]"
+
+
+class ApprovalOrder(BaseModel):
+    """Generated approval order (приказ) PDF for an approved application (#27)."""
+
+    application = models.ForeignKey(
+        Application, verbose_name="Заявка", on_delete=models.CASCADE,
+        related_name="orders",
+    )
+    number = models.CharField("Номер приказа", max_length=64)
+    file = models.FileField("Файл приказа (PDF)", upload_to="orders/%Y/%m/")
+    issued_at = models.DateTimeField("Издан")
+
+    class Meta:
+        verbose_name = "Приказ о согласовании"
+        verbose_name_plural = "Приказы о согласовании"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Приказ {self.number} ({self.application_id})"
