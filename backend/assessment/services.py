@@ -255,8 +255,30 @@ def compute_assessment(structure, as_of: date | None = None):
 
 
 def save_assessment(structure, as_of: date | None = None):
-    """Compute and persist the current assessment; update Structure.condition_status."""
+    """Compute and persist the current assessment; update Structure.condition_status.
+
+    Also runs the risk detectors (#18) for hydroposts, stores their breakdown in
+    risk_scores and raises a risk.alert audit event on high/critical.
+    """
+    from common.audit import AuditEvent, record
+    from monitoring.risk import compute_risk
+
     condition, repair, next_due, breakdown = compute_assessment(structure, as_of)
+
+    risk = compute_risk(structure)
+    breakdown["risk"] = risk
+    if risk.get("alert"):
+        record(AuditEvent(
+            actor="system",
+            action="risk.alert",
+            entity_type="structure",
+            entity_id=str(structure.pk),
+            payload={
+                "max_level": risk["max_level"],
+                "detectors": {k: v["level"] for k, v in risk["detectors"].items()},
+            },
+        ))
+
     ConditionAssessment.objects.update_or_create(
         structure=structure,
         defaults={
