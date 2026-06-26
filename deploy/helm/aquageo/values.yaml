@@ -18,7 +18,7 @@ image:
   frontend:
     repository: adilforest/aquageo-frontend
     tag: ""
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 # ─── Доступ к приватному registry (ghcr.io) ──────────────────────────────
 # Вариант A: создать секрет из логина/токена -> create: true.

@@ -11,7 +11,7 @@ image:
     tag: latest
   frontend:
     tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 # Приватный ghcr: заранее созданный секрет (kubectl create secret docker-registry
 # ghcr-pull ...). Если сделать GHCR-пакеты public — убрать existingSecret.
