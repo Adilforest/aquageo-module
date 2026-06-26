@@ -6,6 +6,7 @@ from .stats_views import (
     ByTerritoryView,
     ByTypeView,
     LevelTimeseriesView,
+    RegionsView,
     RiskSummaryView,
 )
 from .views import (
@@ -29,4 +30,5 @@ urlpatterns = router.urls + [
     path("stats/by-territory/", ByTerritoryView.as_view(), name="stats-by-territory"),
     path("stats/risk-summary/", RiskSummaryView.as_view(), name="stats-risk-summary"),
     path("stats/level-timeseries/", LevelTimeseriesView.as_view(), name="stats-level-timeseries"),
+    path("regions/", RegionsView.as_view(), name="regions"),
 ]

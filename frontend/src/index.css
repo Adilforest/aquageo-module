@@ -125,6 +125,28 @@ body {
   gap: 14px;
 }
 
+/* --- Region switcher (#33) --- */
+.region-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.region-switch .material-symbols-outlined {
+  font-size: 20px;
+}
+.region-switch select {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  max-width: 220px;
+}
+
 /* --- Auth control --- */
 .auth-control {
   position: relative;

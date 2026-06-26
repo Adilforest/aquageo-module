@@ -2,6 +2,7 @@ import django_filters as df
 from django import forms
 
 from .models import Structure
+from .regions import region_descendant_katos
 
 
 class _AnyMultipleChoiceField(forms.MultipleChoiceField):
@@ -24,13 +25,15 @@ class StructureFilter(df.FilterSet):
     """Filters for /api/v1/structures and the GeoJSON feed.
 
     Primary (multi-select): ``type``, ``condition``. Secondary (single):
-    ``basin``, ``district``. Free-text search is handled by SearchFilter.
+    ``basin``, ``district``. Region scope (``region``, top-level AdminUnit) is the
+    scaling mechanism. Free-text search is handled by SearchFilter.
     """
 
     type = MultiValueFilter(field_name="type__code")
     condition = MultiValueFilter(field_name="condition_status")
     basin = df.UUIDFilter(field_name="basin_id")
     district = df.CharFilter(field_name="admin_unit_id")
+    region = df.CharFilter(method="filter_region")
     needs_geocoding = df.BooleanFilter(field_name="needs_geocoding")
 
     # Backwards-compatible single-value aliases (used by KPI counters, #14).
@@ -42,6 +45,12 @@ class StructureFilter(df.FilterSet):
     class Meta:
         model = Structure
         fields = [
-            "type", "condition", "basin", "district", "needs_geocoding",
+            "type", "condition", "basin", "district", "region", "needs_geocoding",
             "condition_status", "admin_unit", "status", "significance",
         ]
+
+    def filter_region(self, queryset, name, value):
+        """Match structures in the region itself or any descendant district/okrug."""
+        if not value:
+            return queryset
+        return queryset.filter(admin_unit_id__in=region_descendant_katos(value))
