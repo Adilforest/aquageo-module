@@ -19,20 +19,18 @@ spec:
       labels:
         {{- include "aquageo.selectorLabels" (dict "ctx" . "component" "db") | nindent 8 }}
     spec:
-      # Образ postgis не запускается под read-only FS/uid 65532; даём ему
-      # минимально необходимый контекст (fsGroup для прав на том).
+      # Образ postgis запускается под root и сам делает chown/chmod данных и
+      # /var/run/postgresql, поэтому ему нужны дефолтные capabilities (CHOWN,
+      # FOWNER, SETUID/SETGID). Строгий контекст (drop ALL) ломает entrypoint
+      # с "Operation not permitted", поэтому БД оставляем с дефолтными правами.
+      # ВНИМАНИЕ: послабление только для встроенной демо-БД; app-поды строгие.
+      # Для прода используйте внешний managed Postgres (postgres.enabled=false).
       securityContext:
         fsGroup: 999
-        seccompProfile:
-          type: RuntimeDefault
       containers:
         - name: postgres
           image: {{ .Values.postgres.image }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: [ALL]
           env:
             - { name: POSTGRES_DB,       value: {{ .Values.postgres.database | quote }} }
             - { name: POSTGRES_USER,     value: {{ .Values.postgres.username | quote }} }
