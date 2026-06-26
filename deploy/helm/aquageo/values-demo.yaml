@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────────────────
+# ДЕМО values — для презентации, НЕ для прода.
+# Всё внутри кластера: встроенные PostGIS + Redis (эфемерные, без PVC).
+# Тег образов автоматически бампится CI при каждом push в main (job cd-bump),
+# поэтому Argo CD передеплоит демо на свежую сборку. Стартовое значение latest.
+# ─────────────────────────────────────────────────────────────────────────
+
+image:
+  backend:
+    tag: latest
+  frontend:
+    tag: latest
+  pullPolicy: IfNotPresent
+
+# Приватный ghcr: заранее созданный секрет (kubectl create secret docker-registry
+# ghcr-pull ...). Если сделать GHCR-пакеты public — убрать existingSecret.
+imagePullSecret:
+  existingSecret: ghcr-pull
+
+env:
+  DEBUG: "1"            # демо: Django сам отдаёт static и понятные ошибки
+  ALLOWED_HOSTS: "*"
+
+secrets:
+  secretKey: "demo-not-secret"   # только для демо
+  geminiApiKey: ""               # вписать ключ -> заработает ИИ-парсинг
+
+# Встроенные БД/кэш, без постоянных томов (после рестарта данные сбрасываются —
+# для презентации норм; сид/миграции прогонит pre-sync job).
+postgres:
+  enabled: true
+  persistence:
+    enabled: false
+redis:
+  enabled: true
+
+ingress:
+  enabled: true
+  className: traefik
+  host: aquageodemo.ruletk.com
+  tls: []                         # без TLS
+
+web:
+  replicaCount: 1

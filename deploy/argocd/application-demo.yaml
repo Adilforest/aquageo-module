@@ -1,0 +1,36 @@
+# ДЕМО Argo CD Application — для презентации, НЕ для прода.
+# Следит за веткой main, путь deploy/helm/aquageo, values-demo.yaml.
+# automated sync = на каждый push в main (CI бампит тег образа) демо
+# автоматически передеплоивается на свежую сборку.
+#
+# Один раз перед первым синком создать pull-секрет в namespace:
+#   kubectl create namespace aquageo-demo
+#   kubectl -n aquageo-demo create secret docker-registry ghcr-pull \
+#     --docker-server=ghcr.io --docker-username=Adilforest \
+#     --docker-password=<PAT read:packages>
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aquageo-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Adilforest/aquageo-module.git
+    targetRevision: main
+    path: deploy/helm/aquageo
+    helm:
+      valueFiles:
+        - values-demo.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aquageo-demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

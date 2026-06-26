@@ -7,6 +7,10 @@ on:
   push:
     branches: [main, develop]
     tags: ["v*"]
+    # Бамп тега из cd-bump меняет только deploy/** — не перезапускаем сборку.
+    paths-ignore:
+      - "deploy/**"
+      - "**/*.md"
   workflow_dispatch:
 
 concurrency:
@@ -88,3 +92,34 @@ jobs:
           helm template aquageo deploy/helm/aquageo \
             -f deploy/helm/aquageo/values-prod.yaml \
             --set externalDatabase.url=postgis://u:p@h:5432/db > /dev/null
+      - name: Template (demo values)
+        run: |
+          helm template aquageo deploy/helm/aquageo \
+            -f deploy/helm/aquageo/values-demo.yaml > /dev/null
+
+  cd-bump:
+    name: CD — bump demo image tag
+    needs: build
+    # Только при push в main: фиксируем в git тег свежей сборки, дальше
+    # Argo CD (automated sync) сам передеплоит демо.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Bump image tags to current SHA
+        run: |
+          TAG="sha-$(echo '${{ github.sha }}' | cut -c1-7)"
+          yq -i ".image.backend.tag = \"$TAG\"" deploy/helm/aquageo/values-demo.yaml
+          yq -i ".image.frontend.tag = \"$TAG\"" deploy/helm/aquageo/values-demo.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "values-demo.yaml уже на $TAG — нечего коммитить"; exit 0
+          fi
+          git commit -am "chore(cd): bump demo images to $TAG [skip ci]"
+          git push origin main
