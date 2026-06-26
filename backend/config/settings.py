@@ -170,10 +170,23 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "AquaGeo API",
-    "DESCRIPTION": "Каталог, мониторинг и анализ гидротехнических сооружений.",
+    "DESCRIPTION": (
+        "Каталог, мониторинг и анализ гидротехнических сооружений Жамбылской "
+        "области (Шу-Таласский бассейн).\n\n"
+        "Мультизначные фильтры (`type`, `condition`) передаются повторяющимся "
+        "параметром, например `?condition=repair&condition=emergency`."
+    ),
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/api/v1",
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "COMPONENT_SPLIT_REQUEST": True,
+    "TAGS": [
+        {"name": "structures", "description": "Объекты ГТС: CRUD, фильтры, GeoJSON, ряды"},
+        {"name": "stats", "description": "Агрегаты для дашборда"},
+        {"name": "reference", "description": "Справочники: бассейны, КАТО, типы, водные объекты"},
+        {"name": "auth", "description": "JWT-аутентификация"},
+    ],
 }
 
 # --- SimpleJWT (login endpoints wired in issue #4) ------------------------

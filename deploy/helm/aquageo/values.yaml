@@ -1,0 +1,202 @@
+# ─────────────────────────────────────────────────────────────────────────
+# Значения по умолчанию для чарта AquaGeo.
+# Демо «из коробки»: postgres + redis включены, образы из приватного ghcr.io.
+# Прод: см. values-prod.yaml (внешняя БД/Redis, выключенные встроенные).
+# ─────────────────────────────────────────────────────────────────────────
+
+nameOverride: ""
+fullnameOverride: ""
+
+# ─── Образы приложения (backend и frontend) ──────────────────────────────
+image:
+  registry: ghcr.io
+  # backend: Django + Celery (один образ для web/worker/beat)
+  backend:
+    repository: adilforest/aquageo-backend
+    tag: ""          # пусто -> используется .Chart.AppVersion
+  # frontend: статика React за nginx-unprivileged
+  frontend:
+    repository: adilforest/aquageo-frontend
+    tag: ""
+  pullPolicy: IfNotPresent
+
+# ─── Доступ к приватному registry (ghcr.io) ──────────────────────────────
+# Вариант A: создать секрет из логина/токена -> create: true.
+# Вариант B: указать имя уже существующего secret -> existingSecret: "<name>".
+imagePullSecret:
+  create: false
+  name: aquageo-ghcr
+  existingSecret: ""
+  registry: ghcr.io
+  username: ""
+  # PAT с правом read:packages (classic) или GITHUB_TOKEN из CI.
+  token: ""
+
+# ─── Строгий securityContext для app-подов (web/worker/beat/frontend/job) ─
+# Требование: uid+gid > 60000, fsGroup >= 65000. 65532 = "nonroot".
+security:
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+    fsGroupChangePolicy: OnRootMismatch
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: false
+
+# ─── Переменные окружения ────────────────────────────────────────────────
+env:
+  DEBUG: "0"
+  ALLOWED_HOSTS: "*"
+  LLM_PROVIDER: gemini
+  LLM_MODEL: gemini/gemini-2.0-flash
+  STORAGE_BACKEND: local
+  # Произвольные доп. переменные (попадают в ConfigMap):
+  extra: {}
+
+# Секреты приложения. Если token/key пустой — ключ в Secret не попадает.
+secrets:
+  # ОБЯЗАТЕЛЬНО задать в проде (при DEBUG=0 Django падает без него).
+  secretKey: "change-me-in-production"
+  geminiApiKey: ""
+  anthropicApiKey: ""
+  # Ссылка на готовый Secret вместо генерации чартом (envFrom):
+  existingSecret: ""
+
+# ─── web (Django + gunicorn) ─────────────────────────────────────────────
+web:
+  replicaCount: 1
+  command: []   # пусто -> gunicorn config.wsgi (см. deployment)
+  gunicorn:
+    workers: 3
+    bind: "0.0.0.0:8000"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: "1",  memory: 512Mi }
+  livenessProbe:
+    httpGet: { path: /api/v1/, port: http }
+    initialDelaySeconds: 20
+    periodSeconds: 15
+  readinessProbe:
+    httpGet: { path: /api/v1/, port: http }
+    initialDelaySeconds: 10
+    periodSeconds: 10
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 75
+  podDisruptionBudget:
+    enabled: false
+    minAvailable: 1
+
+# ─── worker (Celery) ─────────────────────────────────────────────────────
+worker:
+  replicaCount: 1
+  concurrency: 2
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: "1",  memory: 512Mi }
+
+# ─── beat (Celery beat) ──────────────────────────────────────────────────
+beat:
+  # schedule пишется на read-only FS -> кладём в writable emptyDir
+  schedulePath: /tmp/celerybeat/schedule.db
+  resources:
+    requests: { cpu: 50m,  memory: 128Mi }
+    limits:   { cpu: 250m, memory: 256Mi }
+
+# ─── frontend (nginx) ────────────────────────────────────────────────────
+frontend:
+  enabled: true
+  replicaCount: 1
+  containerPort: 8080
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    requests: { cpu: 25m,  memory: 32Mi }
+    limits:   { cpu: 250m, memory: 128Mi }
+
+# ─── Job миграций (Helm hook pre-install/pre-upgrade; Argo -> PreSync) ────
+migrate:
+  enabled: true
+  collectstatic: true
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: "1",  memory: 512Mi }
+
+# ─── Встроенный PostGIS (демо). Прод: postgres.enabled=false + externalDatabase ─
+postgres:
+  enabled: true
+  image: postgis/postgis:16-3.4
+  database: aquageo
+  username: aquageo
+  password: aquageo
+  service:
+    port: 5432
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: ""
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: "1",  memory: 1Gi }
+
+externalDatabase:
+  # Используется только при postgres.enabled=false.
+  # Полный DSN; имеет приоритет над host/port/...:
+  url: ""
+  host: ""
+  port: 5432
+  database: aquageo
+  username: aquageo
+  password: ""
+
+# ─── Встроенный Redis (демо) ─────────────────────────────────────────────
+redis:
+  enabled: true
+  image: redis:7-alpine
+  service:
+    port: 6379
+  resources:
+    requests: { cpu: 25m,  memory: 32Mi }
+    limits:   { cpu: 250m, memory: 256Mi }
+
+externalRedis:
+  url: ""   # redis://host:6379/0 (при redis.enabled=false)
+
+# ─── Ingress ─────────────────────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: nginx
+  annotations: {}
+  host: aquageo.local
+  tls: []
+  # / -> frontend, /api,/admin,/static,/media -> web
+  apiPaths:
+    - /api
+    - /admin
+    - /static
+    - /media
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}

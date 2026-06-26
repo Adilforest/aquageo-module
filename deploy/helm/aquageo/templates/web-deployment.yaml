@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "aquageo.fullname" . }}-web
+  labels:
+    {{- include "aquageo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  {{- if not .Values.web.autoscaling.enabled }}
+  replicas: {{ .Values.web.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "aquageo.selectorLabels" (dict "ctx" . "component" "web") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aquageo.selectorLabels" (dict "ctx" . "component" "web") | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-env.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "aquageo.serviceAccountName" . }}
+      {{- include "aquageo.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.security.podSecurityContext | nindent 8 }}
+      containers:
+        - name: web
+          image: {{ include "aquageo.backendImage" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.security.containerSecurityContext | nindent 12 }}
+          command: ["sh", "-c"]
+          args:
+            - >-
+              {{ if .Values.migrate.collectstatic }}python manage.py collectstatic --noinput && {{ end }}gunicorn config.wsgi:application
+              --bind {{ .Values.web.gunicorn.bind }}
+              --workers {{ .Values.web.gunicorn.workers }}
+          ports:
+            - name: http
+              containerPort: 8000
+          {{- include "aquageo.appEnvFrom" . | nindent 10 }}
+          livenessProbe:
+            {{- toYaml .Values.web.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.web.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: staticfiles, mountPath: /app/staticfiles }
+            - { name: mediafiles, mountPath: /app/mediafiles }
+      volumes:
+        - { name: tmp, emptyDir: {} }
+        - { name: staticfiles, emptyDir: {} }
+        - { name: mediafiles, emptyDir: {} }
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

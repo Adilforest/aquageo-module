@@ -1,0 +1,14 @@
+{{- if .Values.web.podDisruptionBudget.enabled -}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "aquageo.fullname" . }}-web
+  labels:
+    {{- include "aquageo.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  minAvailable: {{ .Values.web.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      {{- include "aquageo.selectorLabels" (dict "ctx" . "component" "web") | nindent 6 }}
+{{- end }}
