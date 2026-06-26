@@ -1,7 +1,8 @@
 # ДЕМО Argo CD Application — для презентации, НЕ для прода.
-# Следит за веткой main, путь deploy/helm/aquageo, values-demo.yaml.
-# automated sync = на каждый push в main (CI бампит тег образа) демо
-# автоматически передеплоивается на свежую сборку.
+# Следит за веткой demo (её публикует CI: зеркало main + свежий тег образа).
+# automated sync = на каждый push в main CI пересобирает образы и обновляет
+# ветку demo -> Argo CD автоматически передеплоивает свежую сборку.
+# Ветку main CI не трогает (она под branch protection).
 #
 # Один раз перед первым синком создать pull-секрет в namespace:
 #   kubectl create namespace aquageo-demo
@@ -19,7 +20,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Adilforest/aquageo-module.git
-    targetRevision: main
+    targetRevision: demo
     path: deploy/helm/aquageo
     helm:
       valueFiles:

@@ -98,10 +98,11 @@ jobs:
             -f deploy/helm/aquageo/values-demo.yaml > /dev/null
 
   cd-bump:
-    name: CD — bump demo image tag
+    name: CD — publish demo branch
     needs: build
-    # Только при push в main: фиксируем в git тег свежей сборки, дальше
-    # Argo CD (automated sync) сам передеплоит демо.
+    # Только при push в main. main защищён, поэтому НЕ пишем в него:
+    # публикуем отдельную незащищённую ветку demo (зеркало main + свежий тег),
+    # за которой следит Argo CD. Ветка demo force-push'ится — это деплой-артефакт.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -109,17 +110,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Bump image tags to current SHA
+      - name: Publish demo branch with bumped image tag
         run: |
           TAG="sha-$(echo '${{ github.sha }}' | cut -c1-7)"
-          yq -i ".image.backend.tag = \"$TAG\"" deploy/helm/aquageo/values-demo.yaml
-          yq -i ".image.frontend.tag = \"$TAG\"" deploy/helm/aquageo/values-demo.yaml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet; then
-            echo "values-demo.yaml уже на $TAG — нечего коммитить"; exit 0
-          fi
-          git commit -am "chore(cd): bump demo images to $TAG [skip ci]"
-          git push origin main
+          git checkout -B demo '${{ github.sha }}'
+          yq -i ".image.backend.tag = \"$TAG\"" deploy/helm/aquageo/values-demo.yaml
+          yq -i ".image.frontend.tag = \"$TAG\"" deploy/helm/aquageo/values-demo.yaml
+          git commit -am "chore(cd): demo images $TAG"
+          git push -f origin demo
