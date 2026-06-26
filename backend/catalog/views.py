@@ -90,8 +90,12 @@ class StructureViewSet(ModelViewSet):
     @extend_schema(parameters=GEOJSON_FILTER_PARAMS, responses=StructureGeoSerializer)
     @action(detail=False, methods=["get"], pagination_class=None)
     def geojson(self, request):
-        """Filtered FeatureCollection for the map (same filters as the list)."""
-        qs = self.filter_queryset(self.get_queryset())
+        """Filtered FeatureCollection for the map (same filters as the list).
+
+        Only structures with geometry are returned — objects awaiting geocoding
+        (needs_geocoding) have no geom and never appear on the map.
+        """
+        qs = self.filter_queryset(self.get_queryset()).filter(geom__isnull=False)
         return Response(StructureGeoSerializer(qs, many=True).data)
 
 

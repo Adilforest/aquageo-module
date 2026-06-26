@@ -80,8 +80,8 @@ class StructureSerializer(serializers.ModelSerializer):
             "geom", "basin", "basin_name", "admin_unit", "admin_unit_name",
             "water_body", "water_body_name", "commissioning_year", "wear_percent",
             "ownership", "cadastral_number", "state_act", "responsible_org",
-            "significance", "condition_status", "status", "attributes",
-            "created_at", "updated_at",
+            "significance", "condition_status", "status", "needs_geocoding",
+            "attributes", "created_at", "updated_at",
         )
         # condition_status is computed by the assessment service (issue #16).
         read_only_fields = ("id", "condition_status", "created_at", "updated_at")

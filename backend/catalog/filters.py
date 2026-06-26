@@ -31,6 +31,7 @@ class StructureFilter(df.FilterSet):
     condition = MultiValueFilter(field_name="condition_status")
     basin = df.UUIDFilter(field_name="basin_id")
     district = df.CharFilter(field_name="admin_unit_id")
+    needs_geocoding = df.BooleanFilter(field_name="needs_geocoding")
 
     # Backwards-compatible single-value aliases (used by KPI counters, #14).
     condition_status = df.CharFilter(field_name="condition_status")
@@ -41,6 +42,6 @@ class StructureFilter(df.FilterSet):
     class Meta:
         model = Structure
         fields = [
-            "type", "condition", "basin", "district",
+            "type", "condition", "basin", "district", "needs_geocoding",
             "condition_status", "admin_unit", "status", "significance",
         ]
