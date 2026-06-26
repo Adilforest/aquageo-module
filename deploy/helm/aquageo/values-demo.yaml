@@ -8,24 +8,20 @@
 
 image:
   backend:
-    tag: latest
+    tag: sha-097fe94
   frontend:
-    tag: latest
+    tag: sha-097fe94
   pullPolicy: Always
-
 # Приватный ghcr: заранее созданный секрет (kubectl create secret docker-registry
 # ghcr-pull ...). Если сделать GHCR-пакеты public — убрать existingSecret.
 imagePullSecret:
   existingSecret: ghcr-pull
-
 env:
-  DEBUG: "1"            # демо: Django сам отдаёт static и понятные ошибки
+  DEBUG: "1" # демо: Django сам отдаёт static и понятные ошибки
   ALLOWED_HOSTS: "*"
-
 secrets:
-  secretKey: "demo-not-secret"   # только для демо
-  geminiApiKey: ""               # вписать ключ -> заработает ИИ-парсинг
-
+  secretKey: "demo-not-secret" # только для демо
+  geminiApiKey: "" # вписать ключ -> заработает ИИ-парсинг
 # Встроенные БД/кэш, без постоянных томов (после рестарта данные сбрасываются —
 # для презентации норм; сид/миграции прогонит pre-sync job).
 postgres:
@@ -34,12 +30,10 @@ postgres:
     enabled: false
 redis:
   enabled: true
-
 ingress:
   enabled: true
   className: traefik
   host: aquageodemo.ruletk.com
-  tls: []                         # без TLS
-
+  tls: [] # без TLS
 web:
   replicaCount: 1
