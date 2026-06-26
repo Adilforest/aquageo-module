@@ -195,10 +195,122 @@ body {
   flex: none;
 }
 
-.map-overlay-count {
+/* --- Filter panel --- */
+.filter-panel {
   position: absolute;
   top: 14px;
   left: 14px;
+  z-index: 1000;
+  width: 250px;
+  max-height: calc(100% - 28px);
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+}
+
+.fp-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.fp-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.fp-search,
+.fp-select {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  background: #fff;
+  color: var(--text);
+}
+
+.fp-group-title {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+
+.fp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.chip.active {
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.chip.type.active {
+  background: var(--accent);
+}
+
+.chip-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.chip.active .chip-dot {
+  background: #fff !important;
+}
+
+.fp-reset {
+  margin-top: 14px;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.fp-reset:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.map-overlay-count {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1000;
   background: var(--panel);
   border: 1px solid var(--border);

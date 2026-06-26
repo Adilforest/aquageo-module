@@ -5,11 +5,13 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer, Marker, Polyline, Popup, TileLayer } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
+import { useSearchParams } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 
 import { apiGet } from "../api/client";
+import FilterPanel from "../components/FilterPanel";
 import Legend from "../components/Legend";
 import { conditionColor, typeIcon } from "../theme";
 import type { StructureFeature, StructureFeatureCollection } from "../types";
@@ -37,9 +39,12 @@ function markerIcon(code: string, condition: string): L.DivIcon {
 
 export default function MapPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const qs = searchParams.toString();
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["structures-geojson"],
-    queryFn: () => apiGet<StructureFeatureCollection>("/structures/geojson/"),
+    queryKey: ["structures-geojson", qs],
+    queryFn: () =>
+      apiGet<StructureFeatureCollection>(`/structures/geojson/${qs ? `?${qs}` : ""}`),
   });
 
   const features = useMemo(
@@ -98,9 +103,7 @@ export default function MapPage() {
         </MarkerClusterGroup>
       </MapContainer>
 
-      {!isLoading && !isError && (
-        <div className="map-overlay-count">{t("map.count", { count: features.length })}</div>
-      )}
+      <FilterPanel count={features.length} />
       {isLoading && <div className="map-overlay-count">{t("map.loading")}</div>}
       {isError && <div className="map-overlay-count">{t("map.error")}</div>}
 

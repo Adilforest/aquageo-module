@@ -2,7 +2,25 @@ from rest_framework import serializers
 from rest_framework_gis.fields import GeometryField
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 
-from .models import Structure
+from .models import AdminUnit, Basin, ObjectType, Structure
+
+
+class BasinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Basin
+        fields = ("id", "name_ru", "name_kk", "name_en")
+
+
+class AdminUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminUnit
+        fields = ("kato", "name_ru", "name_kk", "name_en", "level", "parent")
+
+
+class ObjectTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ObjectType
+        fields = ("code", "name_ru", "name_kk", "name_en", "geometry_kind")
 
 
 class StructureSerializer(serializers.ModelSerializer):

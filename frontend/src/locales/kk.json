@@ -23,6 +23,14 @@
     "condition": "Жағдайы",
     "types": "Түрлері"
   },
+  "filters": {
+    "title": "Сүзгілер",
+    "search": "Атауы бойынша іздеу…",
+    "basin": "Бассейн",
+    "district": "Аудан",
+    "all": "Барлығы",
+    "reset": "Тазалау"
+  },
   "condition": {
     "serviceable": "Жарамды",
     "monitoring": "Бақылауды қажет етеді",

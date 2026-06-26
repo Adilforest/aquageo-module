@@ -23,6 +23,14 @@
     "condition": "Состояние",
     "types": "Типы"
   },
+  "filters": {
+    "title": "Фильтры",
+    "search": "Поиск по названию…",
+    "basin": "Бассейн",
+    "district": "Район",
+    "all": "Все",
+    "reset": "Сбросить"
+  },
   "condition": {
     "serviceable": "Исправное",
     "monitoring": "Требует наблюдения",
