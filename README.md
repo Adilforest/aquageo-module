@@ -59,7 +59,7 @@ docker compose exec web python manage.py bootstrap_demo
 
 `bootstrap_demo` последовательно выполняет:
 `seed_reference` → `import_data` + `import_org_dataset` → `generate_hydropost_history`
-→ `seed_demo` (расставляет правдоподобный износ и свежие осмотры, чтобы каталог
+→ `seed_demo_state` (расставляет правдоподобный износ и свежие осмотры, чтобы каталог
 не выглядел «сплошь аварийным») → `recompute_assessments` (пересчёт состояний и
 риска) → `create_demo_users` (печатает таблицу аккаунтов).
 
@@ -70,7 +70,7 @@ docker compose exec web python manage.py bootstrap_demo
 Отдельные шаги при необходимости:
 
 ```bash
-docker compose exec web python manage.py seed_demo            # только демо-сид
+docker compose exec web python manage.py seed_demo_state      # только реалистичный сид
 docker compose exec web python manage.py recompute_assessments
 docker compose exec web python manage.py create_demo_users    # пере-создать аккаунты
 ```
