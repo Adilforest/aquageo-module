@@ -4,6 +4,7 @@ import Layout from "./components/Layout";
 import CatalogPage from "./pages/CatalogPage";
 import DashboardPage from "./pages/DashboardPage";
 import MapPage from "./pages/MapPage";
+import ParseReviewPage from "./pages/ParseReviewPage";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="structures/:id" element={<MapPage />} />
         <Route path="catalog" element={<CatalogPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="parse" element={<ParseReviewPage />} />
       </Route>
     </Routes>
   );
