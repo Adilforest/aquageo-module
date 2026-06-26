@@ -6,6 +6,8 @@ metadata:
   labels:
     {{- include "aquageo.labels" . | nindent 4 }}
     app.kubernetes.io/component: db
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"
 spec:
   clusterIP: None
   ports:

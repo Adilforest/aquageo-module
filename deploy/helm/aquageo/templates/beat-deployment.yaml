@@ -5,6 +5,8 @@ metadata:
   labels:
     {{- include "aquageo.labels" . | nindent 4 }}
     app.kubernetes.io/component: beat
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   replicas: 1
   strategy:
