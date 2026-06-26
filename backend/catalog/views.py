@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -5,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from common.audit import AuditEvent, record
+from monitoring.serializers import HydropostReadingSerializer
 
 from .filters import StructureFilter
 from .models import AdminUnit, Basin, ObjectType, Structure, WaterBody
@@ -97,6 +101,27 @@ class StructureViewSet(ModelViewSet):
         """
         qs = self.filter_queryset(self.get_queryset()).filter(geom__isnull=False)
         return Response(StructureGeoSerializer(qs, many=True).data)
+
+    @extend_schema(
+        parameters=[OpenApiParameter("days", int, description="Окно (последние N дней)")],
+        responses=HydropostReadingSerializer(many=True),
+    )
+    @action(detail=True, methods=["get"])
+    def readings(self, request, pk=None):
+        """Hydropost time series (ascending by ts), paginated; optional ?days=N."""
+        structure = self.get_object()
+        qs = structure.readings.all()
+        days = request.query_params.get("days")
+        if days:
+            try:
+                since = timezone.now() - timedelta(days=int(days))
+                qs = qs.filter(ts__gte=since)
+            except ValueError:
+                pass
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            return self.get_paginated_response(HydropostReadingSerializer(page, many=True).data)
+        return Response(HydropostReadingSerializer(qs, many=True).data)
 
 
 class BasinViewSet(ReadOnlyModelViewSet):

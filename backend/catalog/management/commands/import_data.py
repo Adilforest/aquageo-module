@@ -162,6 +162,7 @@ class Command(BaseCommand):
                         "danger_level": row.get("danger_level", ""),
                         "level_mean": row.get("level_mean", ""),
                         "water_temp": row.get("water_temp", ""),
+                        "date": row.get("date", ""),
                     },
                 )
 

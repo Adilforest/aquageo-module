@@ -122,14 +122,20 @@ def test_repair_status_mapping(types, wear, expected_condition, expected_repair)
 # --- hydropost override ---
 @pytest.mark.django_db
 def test_hydropost_level_over_danger_is_critical_even_if_serviceable(types):
+    from django.utils import timezone
+
+    from monitoring.models import HydropostReading
+
     s = mk(
         types, code="hydropost", wear_percent=5, commissioning_year=THIS_YEAR - 2,
         geom=Point(71.0, 43.0, srid=4326),
-        attributes={"level_mean": 320, "danger": 250},
     )
     Inspection.objects.create(
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
+    )
+    HydropostReading.objects.create(
+        structure=s, ts=timezone.now(), water_level=320, danger_level=250, synthetic=False
     )
     cond, repair, _due, br = compute_assessment(s)
     assert cond == ConditionStatus.SERVICEABLE
@@ -139,13 +145,17 @@ def test_hydropost_level_over_danger_is_critical_even_if_serviceable(types):
 
 @pytest.mark.django_db
 def test_hydropost_level_below_danger_not_overridden(types):
-    s = mk(
-        types, code="hydropost", wear_percent=5, commissioning_year=THIS_YEAR - 2,
-        attributes={"level_mean": 100, "danger": 250},
-    )
+    from django.utils import timezone
+
+    from monitoring.models import HydropostReading
+
+    s = mk(types, code="hydropost", wear_percent=5, commissioning_year=THIS_YEAR - 2)
     Inspection.objects.create(
         structure=s, inspected_at=datetime.date.today(),
         condition_observed=ConditionStatus.SERVICEABLE,
+    )
+    HydropostReading.objects.create(
+        structure=s, ts=timezone.now(), water_level=100, danger_level=250, synthetic=False
     )
     _, repair, _due, br = compute_assessment(s)
     assert repair == "norm"

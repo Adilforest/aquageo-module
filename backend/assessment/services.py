@@ -81,18 +81,17 @@ def _base_from_age(age_years: int) -> str:
 
 
 def _hydropost_override(structure) -> bool:
-    """Hydropost is critical when the water level reaches the danger level."""
+    """Hydropost is critical when the latest reading's level reaches danger.
+
+    Source switched (#19) from Structure.attributes to the HydropostReading
+    time series — uses the most recent measurement.
+    """
     if getattr(structure, "type_id", None) != "hydropost":
         return False
-    attrs = structure.attributes or {}
-    level = attrs.get("water_level", attrs.get("level_mean"))
-    danger = attrs.get("danger", attrs.get("danger_level"))
-    try:
-        if level is not None and danger is not None and float(level) >= float(danger):
-            return True
-    except (TypeError, ValueError):
-        pass  # danger is categorical, not numeric
-    return str(attrs.get("danger_level", "")).strip().lower() == "danger"
+    last = structure.readings.order_by("-ts").first()
+    if last and last.water_level is not None and last.danger_level is not None:
+        return last.water_level >= last.danger_level
+    return False
 
 
 def _add_months(d: date, months: int) -> date:
