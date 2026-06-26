@@ -87,16 +87,22 @@ web:
     type: ClusterIP
     port: 8000
   resources:
-    requests: { cpu: 100m, memory: 256Mi }
-    limits:   { cpu: "1",  memory: 512Mi }
+    requests: { cpu: 250m, memory: 512Mi }
+    limits:   { cpu: "2",  memory: 1Gi }
+  # Пробы с запасом: GeoDjango (GDAL/GEOS) на холодную отвечает дольше 1с
+  # (дефолтный timeout пробы), из-за чего liveness убивал контейнер -> BackOff.
   livenessProbe:
     httpGet: { path: /api/v1/, port: http }
-    initialDelaySeconds: 20
+    initialDelaySeconds: 40
     periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 6
   readinessProbe:
     httpGet: { path: /api/v1/, port: http }
-    initialDelaySeconds: 10
+    initialDelaySeconds: 15
     periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
   autoscaling:
     enabled: false
     minReplicas: 1
